@@ -1,0 +1,12 @@
+{% load static %}
+{% load rating_tags %}
+
+{% for _ in full_stars %}
+    <img src="{% static 'assets/img/icons/stars/full_star.svg' %}" alt="full star" class="star-icon">
+{% endfor %}
+{% if half_star %}
+    <img src="{% static 'assets/img/icons/stars/middle_star.svg' %}" alt="half star" class="star-icon">
+{% endif %}
+{% for _ in empty_stars %}
+    <img src="{% static 'assets/img/icons/stars/empty_star.svg' %}" alt="empty star" class="star-icon">
+{% endfor %}

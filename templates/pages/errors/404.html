@@ -1,0 +1,24 @@
+{% extends 'layouts/base.html' %}
+
+{% load humanize %}
+{% load static %}
+
+{% block title %}404 - Página no encontrada{% endblock %}
+
+{% block content %}
+
+    {% block extra_styles %}
+        <link rel="stylesheet" href="{% static 'styles/pages/errors/404.css' %}">
+    {% endblock %}
+
+    {% include 'components/navbar/navbar.html' %}
+
+    <div class="section">
+        <img src="{% static 'assets/img/errors/404.jpg' %}" alt="" class="error-image">
+        <h1 class="error-code">404</h1>
+        <p class="error-message">¡Oops! La página que buscas no existe.</p>
+        <a href="{% url 'home:home' %}" class="primary_btn">Volver al inicio</a>
+    </div>
+
+    {% include 'components/footer.html' %}
+{% endblock %}

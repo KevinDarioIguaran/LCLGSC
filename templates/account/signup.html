@@ -1,0 +1,45 @@
+{% extends 'account/login.html' %}
+{% load static %}
+
+{% block title %}Primer acceso{% endblock %}
+
+{% block item %}
+    <h3>Primer acceso</h3>
+    <form method="POST" class="login-form" action="{% url 'users:signup' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <!-- Código -->
+            <label for="new_id_identifier">Código</label>
+            <input type="text" name="identifier" id="new_id_identifier" required
+                   value="{{ request.POST.identifier }}">
+
+            <!-- Nombre -->
+            <label for="new_id_first_name">Nombre</label>
+            <input type="text" name="first_name" id="new_id_first_name" required
+                               value="{{ request.POST.first_name }}">
+
+            <!-- Apellido -->
+            <label for="new_id_last_name">Apellido</label>
+            <input type="text" name="last_name" id="new_id_last_name"
+                   value="{{ request.POST.last_name }}">
+
+            <!-- Código secreto -->
+            <label for="new_id_secret_code">Código secreto</label>
+            <input type="password" name="secret_code" id="new_id_secret_code" required
+                   value="{{ request.POST.secret_code }}">
+        </div>
+
+        <!-- Error general -->
+        {% if errors.non_field %}
+            <div class="error-message-box">
+                <span class="error-message">{{ errors.non_field }}</span>
+            </div>
+            <br>
+        {% endif %}
+
+        <div class="button-container">
+            <button type="submit" class="btn-primary">Validar</button>
+            <a href="{% url 'users:login' %}" class="btn-secondary">Cancelar</a>
+        </div>
+    </form>
+{% endblock %}

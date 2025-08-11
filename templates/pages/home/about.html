@@ -1,0 +1,70 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+    {% block extra_styles %}
+        <link rel="stylesheet" href="{% static 'styles/components/about.css' %}">
+    {% endblock %}
+
+    {% include 'components/navbar/navbar.html' %}
+
+
+    <main class="main">
+        <section class="section">
+            <h1>Bienvenidos a Rurales Colombia</h1>
+            <br>
+            <p><strong>Rurales Colombia</strong> es un mercado en línea donde lo que pidas te lo llevamos a tu casa. Ofrecemos una amplia variedad de productos del campo colombiano, llevando la frescura y calidad directamente a tu puerta.</p>
+            <p>Ya no tienes que ir al mercado ni preocuparte por la falta de tiempo; nosotros nos encargamos de llevar lo mejor de nuestros productos a tu hogar con solo un clic. ¡Descubre la variedad de productos frescos y de calidad que tenemos para ti!</p>
+        </section>
+
+        <section class="section">
+            <h2>¿Cómo Funciona?</h2>
+            <ul>
+                <li>
+                    <h3>Selecciona tus productos</h3>
+                    <p>Explora nuestro catálogo y elige los productos que más te gusten. Desde frutas frescas hasta productos orgánicos, tenemos de todo.</p>
+                </li>
+                <li>
+                    <h3>Realiza tu pedido</h3>
+                    <p>Haz tu pedido de manera fácil y rápida a través de nuestra plataforma en línea. Nuestro proceso de compra es 100% seguro.</p>
+                </li>
+                <li>
+                    <h3>Te lo llevamos a tu casa</h3>
+                    <p>Una vez confirmes tu pedido será empacado de manera inmediata y enviado a la dirección que proporcionaste en el menor tiempo posible.</p>
+                </li>
+                <li>
+                    <h3>Y finalmente pagas</h3>
+                    <p>Cuando el producto llegue a tu casa, puedes pagar con el servicio de contraentrega después de verificar el pedido.</p>
+                </li>
+            </ul>
+        </section>
+
+        <section class="section">
+            <h2>¿Por qué elegir Rurales Colombia?</h2>
+            <ul>
+                <li>
+                    <h3>Productos frescos y de calidad</h3>
+                    <p>Trabajamos directamente con productores locales para garantizar la frescura y la mejor calidad en cada uno de nuestros productos.</p>
+                </li>
+                <li>
+                    <h3>Comodidad y ahorro de tiempo</h3>
+                    <p>Olvídate de las largas filas y el tiempo perdido en el mercado. Hacemos que tu compra sea rápida y sencilla, con entrega a domicilio.</p>
+                </li>
+                <li>
+                    <h3>Apoyo a los productores locales</h3>
+                    <p>Al comprar en Rurales Colombia, apoyas a los productores del campo colombiano, ayudando a fortalecer nuestra economía local.</p>
+                </li>
+            </ul>
+        </section>
+
+        <section class="section contact-info">
+            <h2>Contáctanos</h2>
+            <p>Si tienes alguna pregunta o necesitas más información sobre nuestros productos, no dudes en contactarnos:</p>
+            <p><strong>Email:</strong> <a href="mailto:iguarankevin53@gmail.com">iguarankevin53@gmail.com</a></p>
+            <p><strong>Teléfono:</strong> +57 3234441823</p>
+        </section>
+    </main>
+
+    {% include 'components/footer.html' %}
+
+{% endblock %}

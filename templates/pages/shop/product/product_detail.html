@@ -1,0 +1,168 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% load humanize %}
+{% load rating_filters %}
+{% load dict_filters_percentage %}
+{% if reviews %}
+    {% load rating_tags %}
+{% endif %}
+
+
+{% block content %}
+    {% include 'components/navbar/navbar.html' %}
+    <link rel="stylesheet" href="{% static 'styles/pages/shop/product/product_detail.css' %}">
+
+    <div class="product-detail-container">
+        <div class="product-detail">
+            <div class="product-detail__seller-info">
+                <div class="product-detail__seller-details">
+                    <div class="product-detail__seller-photo-container">
+                        <img src="{{ product.seller.get_cooperative_logo_url}}" alt="Seller Profile Image" class="product-detail__seller-photo">
+                    </div>
+                    
+                    <a href="#" class="product-detail__seller-name">{{ product.seller.get_cooperative_name}}</a>
+                </div>
+                <p class="rating-details">
+                    <span class="average-rating">
+                        {{ average_rating|floatformat:1|default:"Sin calificar" }}
+                        <img src="{% static 'assets/icons/stars/full_star.svg' %}" alt="star icon" class="star-icon"
+                        |
+                    </span>
+                </p>
+            </div>
+            
+            <div class="product-detail__info">
+                <div class="product-detail__description">
+                    {{ product.description|linebreaks }}
+                </div>
+            </div>
+        </div>
+
+
+        <div class="product-detail__swipe-container">
+            <div class="product-detail__img-container">
+                <div class="product-detail__media">
+                    <img src="{{ product.get_image_url }}" alt="{{ product.name }} - Imagen">
+                </div>
+            </div>
+        </div>
+
+        <div class="cart">
+            <div class="cart__box">
+                <p class="cart__box-price">{{ product.price|floatformat:0|intcomma }} COP</p>
+                {% if not form %}
+                    <p class="product__available-false">No disponible</p>
+                {% endif %}
+        
+                {% if form %}
+                    <form action="{% url 'shop:cart_add' product.id %}" method="post" class="cart__actions">
+                        {% csrf_token %}
+                        <div class="cart__box cart__box-select_quantity">
+                            Cantidad:   
+                            <select name="quantity">
+                                {% for i in quantity_range %}
+                                    <option value="{{ i }}">{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                            <p class="cart__box-quantity_text">Disponible {{ product.stock }}</p>
+                        </div>
+        
+                        {% if error %}
+                            <p class="message-error">{{ error }}</p>
+                        {% endif %}
+                        <button type="submit" class="cart__button">Agregar al carrito</button>
+                    </form>
+        
+                    <form action="" method="post" class="cart__actions">
+                        {% csrf_token %}
+                        <button type="submit" class="cart__button">Comprar ahora</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+
+        <div class="product-detail__related-products">
+            <h2 class="product-detail__related-products-title">Productos Relacionados</h2>
+            <div class="product-detail__products-list">
+                {% for related_product in related_products %}
+                    <div class="product-detail__item">
+                        <a href="{% url 'shop:product_detail' id=related_product.id slug=related_product.slug %}" class="product-detail__item-link">
+                            <img src="{{ related_product.get_image_url }}" alt="{{ related_product.name }}" class="product-detail__item-img">
+                            <h4 class="product-detail__item-name">{{ related_product.name }}</h4>
+                            <p class="product-detail__item-price">{{ related_product.price|floatformat:0|intcomma  }} COP</p>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if average_rating %}
+        <div class="reviews">
+            {% if reviews %}
+                <div class="review__comments">
+                    <div class="review__comments-valorate">
+                        <div>
+                            <h3 class="reviews__title">Comentarios</h3>
+                        </div>
+                        <div class="review__comments-valorate-count">
+                            <p class="reviews__count-text">{{ average_rating|floatformat:1|default:"Sin calificar" }}</p>
+                            <p class="reviews__count-total">De {{ review_count }}</p>
+                        </div>
+                    </div>
+
+                    <div class="review__comment">
+                        <div class="review__comment-user-info">
+                            {% for review in reviews_10 %}
+                                <div class="review__comment-valorate">
+                                    <div class="review__comment-valorate-data">
+                                        <div>
+                                            <div>
+                                                <div class="review__comment-comment--user">
+                                                    <div class="review__comment-comment--user-photo-container">
+                                                        <img class="review__comment-comment--user-photo" src="{{ review.user.get_photo_url }}" alt="{{ review.user.name }}">
+                                                    </div>
+                                                
+                                                <p class="review__comment-comment--user-name">
+                                                    {{ review.user.get_full_name}}
+                                                </p>
+                                                </div> 
+                                                <div>
+                                                <div class="review__comment-comment--user-stars">
+                                                        {% render_star_rating review.rating %}
+                                                    </div>
+                                                    
+                                                    <div class="review__comment-comment--user-comment">
+                                                        <p>{{ review.comment}}</p>  
+                                                        <p class="review__comment-date">{{ review.created_at|date:'d-m-Y' }}</p>
+                                                    </div>  
+                                                </div>
+                
+                                            </div>
+
+                                    
+                                        </div>
+
+                                        
+                                        {% if review.get_image_url %}
+                                            <div>
+                                                <img src="{{ review.product.get_image_url }}" alt="" class="review__comments-img">
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>          
+                    </div>            
+                </div>
+            {% endif %}
+        {% endif %}
+
+        </div>
+        {% include 'components/footer.html' %}
+        
+    </div>
+
+    
+
+{% endblock %}

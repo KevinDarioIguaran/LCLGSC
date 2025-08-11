@@ -1,0 +1,23 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'styles/account/login/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="login-page-container">
+    <div class="login-form-side">
+        <div class="login-container">
+            <a class="login-logo-side" href="{% url 'home:home' %}">
+                <img src="{% static 'assets/icons/favicon.ico' %}" alt="Logo Fundación" class="login-logo-img">
+                <h1 class="name-institution">Luis Carlos Galan Sarmiento</h1>
+            </a>
+            <div class="login-box">
+                {% block item %} {% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}Vender un producto{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'styles/pages/shop/sell/sell.css' %}">
+{% endblock %}
+
+{% block content %}
+    {% include 'components/navbar/navbar.html' %}
+
+    <section class="sell-form-section">
+        <div class="sell-container">   
+            <header class="sell-header">
+                <h1 class="sell-heading">Vender un producto</h1>
+            </header>
+            <form action="{% url 'shop:sell' %}" method="POST" class="sell-form" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form }}
+                <button type="submit" class="sell-submit primary_btn">Publicar</button>
+            </form>
+        </div>
+    </section>
+
+    {% include 'components/footer.html' %}
+
+{% endblock %}

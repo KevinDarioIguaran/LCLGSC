@@ -1,0 +1,63 @@
+{% extends 'layouts/base.html' %}
+
+{% load humanize %}
+{% load static %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+
+    {% include 'components/navbar/navbar.html' %}
+
+    {% block extra_styles %}
+        <link rel="stylesheet" href="{% static 'styles/pages/home/home.css' %}">
+    {% endblock %}
+
+    {% if best_offers %}
+    <div class="top">
+        <div class="best-offers">
+            <button class="best-offers__button primary_btn" id="best-offers__button--left">
+                <img src="{% static 'assets/img/icons/arrow_back.svg' %}" alt="">
+            </button>
+            <div class="best-offers__box">
+                {% for offer in best_offers %}
+                    <div class="category">
+                        <a href="{{ offer.category.get_absolute_url }}">
+                            <img src="{{ offer.image.url }}" alt="Oferta en {{ offer.category.name }}" class="category-image">
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="best-offers__button primary_btn" id="best-offers__button--right">
+                <img src="{% static 'assets/img/icons/arrow_forward.svg' %}" alt="">
+            </button>
+        </div>
+        <div class="best-offers__dots"></div>
+    </div>
+       
+    {% endif %}
+
+    {% for category, products in category_products.items %}
+        <div class="all-category">
+            <h2>{{ category }}</h2> 
+            <div class="item">
+                {% for product in products %}
+                    <div class="product">
+                        <a href="{% if product.get_absolute_url %}{{ product.get_absolute_url }}{% endif %}">
+                            <img src="{% if product.get_image_url %}{{ product.get_image_url }}{% else %}{% static 'img/no_image.png' %}{% endif %}">
+                        </a>
+                        <h3>{{ product.name }}</h3>
+                        <p>{{ product.price|floatformat:0|intcomma }} COP</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+
+
+    <script src="{% static 'js/home.js' %}"></script>
+
+
+    {% include 'components/footer.html' %}
+
+{% endblock %}

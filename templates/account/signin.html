@@ -1,0 +1,29 @@
+{% extends 'account/login.html' %}
+{% load static %}
+
+
+{% block title %}Login{% endblock %}
+
+{% block item %}
+    <h3>Iniciar sesión</h3>
+    <form method="POST" class="login-form" action="{% url 'users:login' %}">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_identifier">ID</label>
+            <input type="text" name="identifier" id="id_identifier" required>
+
+            <label for="id_password">Contraseña</label>
+            <input type="password" name="password" id="id_password" required>
+            {% if errors.identifier %}<span class="error-message">{{ errors.identifier }}</span>{% endif %}
+            {% if errors.password %}<span class="error-message">{{ errors.password }}</span>{% endif %}
+        </div>
+
+        {% if errors.non_field %}<span class="error-message">{{ errors.non_field }}</span>{% endif %}
+        <div class="button-container">
+            <a class="btn-secondary" href="{% url 'home:home' %}">Volver</a>
+            <button type="submit" class="btn-primary">Entrar</button>
+        </div>
+        <div class="separator"><hr></div>
+        <a href="{% url 'users:signup' %}" class="btn-link">¿Primer acceso? Crear contraseña</a>
+    </form>
+{% endblock %}

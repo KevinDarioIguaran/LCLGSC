@@ -1,0 +1,32 @@
+{% extends 'layout/base.html' %}
+
+{% load static %}
+
+{% block title %}Confirmar cierre de sesión{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'styles/account/login/login.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="content">
+    <div class="login-container">
+        <div class="login-box">
+            <div class="logo-container">
+                <a href="/"><img src="{% static 'assets/icons/favicon.png' %}" alt="Logo" class="logo"></a>
+                <p class="logo-text">Rurales Colombia</p>
+            </div>
+            <h3>Cerrar sesión</h3>
+            <p>¿Estás seguro de que deseas cerrar sesión?</p>
+            <br>
+            <form method="post" action="{% url 'account_logout' %}">
+                {% csrf_token %}
+                <div class="button-container">
+                    <a class="btn-secondary" href="{% url 'users:show_account' %}">Cancelar</a>
+                    <button type="submit" class="btn-primary">Cerrar sesión</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

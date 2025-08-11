@@ -1,0 +1,183 @@
+{% load static %}
+{% load humanize %}
+
+<div class="profile-box">
+    <!-- Información de cuenta -->
+    <div class="edit-info-menu">
+        <h3 class="admin-title">Información de tu cuenta</h3>
+        <div class="edit-info-table">
+            <div class="edit-info-row">
+                <div class="edit-info-field">Código</div>
+                <div class="edit-info-value">{{ user.code }}</div>
+            </div>
+            <div class="edit-info-row">
+                <div class="edit-info-field">Nombre</div>
+                <div class="edit-info-value">{{ user.first_name }}</div>
+            </div>
+            <div class="edit-info-row">
+                <div class="edit-info-field">Apellido</div>
+                <div class="edit-info-value">{{ user.last_name }}</div>
+            </div>
+
+            {% if user.is_seller %}
+                <div class="edit-info-row">
+                    <div class="edit-info-field">Cooperativa</div>
+                    <div class="edit-info-value">{{ user.get_cooperative_name|default:"—" }}</div>
+                </div>
+            {% endif %}
+
+            {% if user.is_seller %}
+                <div class="edit-info-row">
+                    <div class="edit-info-field">Logo de la cooperativa</div>
+                    <div class="edit-info-value">
+                        {% if user.get_cooperative_logo_url %}
+                            <img src="{{ user.get_cooperative_logo_url }}" alt="Logo" style="max-height: 60px;">
+                        {% else %}
+                            No disponible
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+
+            <div class="edit-info-row">
+                <div class="edit-info-field">Crédito</div>
+                <div class="edit-info-value">${{ user.credit|floatformat:0|intcomma }} COP</div>
+            </div>
+            <div class="edit-info-row">
+                <div class="edit-info-field">Deuda</div>
+                <div class="edit-info-value">${{ user.debt|floatformat:0|intcomma }} COP</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seguridad -->
+    <div class="admin-panel">
+        <h3 class="admin-title">Seguridad</h3>
+        <div class="edit-info-table">
+            <!-- Cambiar contraseña -->
+            <div class="edit-info-row" id="row-password">
+                <div class="edit-info-field">Contraseña</div>
+                <div class="edit-info-action">
+                    <button class="admin-btn" type="button" onclick="hide_byID('row-password');showOrhide_byID('edit-form-password')">Editar</button>
+                </div>
+            </div>
+            <form id="edit-form-password" class="edit-info-edit-form" method="post" action="{% url 'users:change_password' %}">
+                {% csrf_token %}
+                <input type="password" name="current_password" placeholder="Contraseña actual" required>
+                <input type="password" name="new_password1" placeholder="Nueva contraseña" required>
+                <input type="password" name="new_password2" placeholder="Repetir nueva contraseña" required>
+                <button type="submit" class="admin-btn">Guardar</button>
+                <button type="button" class="admin-btn" onclick="hide_byID('edit-form-password');show_byID('row-password')">Cancelar</button>
+            </form>
+
+            <!-- Cerrar sesión -->
+            <div class="edit-info-row">
+                <div class="edit-info-field">Cerrar sesión</div>
+                <div class="edit-info-action">
+                    <form method="post" action="{% url 'users:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="admin-btn">Salir</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Eliminar cuenta -->
+            <div class="edit-info-row" id="row-delete_account">
+                <div class="edit-info-field">Eliminar cuenta</div>
+                <div class="edit-info-action">
+                    <button class="admin-btn" type="button" onclick="hide_byID('row-delete_account');showOrhide_byID('edit-form-delete_account')">Eliminar</button>
+                </div>
+            </div>
+
+            <form id="edit-form-delete_account" class="edit-info-edit-form" method="post" action="{% url 'users:delete_account' %}">
+                {% csrf_token %}
+                <input type="password" name="password" placeholder="Contraseña" required>
+                <button type="submit" class="admin-btn">Eliminar</button>
+                <button type="button" class="admin-btn" onclick="hide_byID('edit-form-delete_account');show_byID('row-delete_account')">Cancelar</button>
+                <p class="form-message" id="message-delete_account"></p>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JS para manejar formularios -->
+<script>
+function hide_byID(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+}
+function show_byID(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "flex";
+}
+function showOrhide_byID(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = (el.style.display === "none" || !el.style.display) ? "flex" : "none";
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    const passwordForm = document.getElementById("edit-form-password");
+
+    passwordForm?.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const formData = new FormData(passwordForm);
+        const csrfToken = formData.get("csrfmiddlewaretoken");
+
+        const response = await fetch(passwordForm.action, {
+            method: "POST",
+            headers: {
+                "X-CSRFToken": csrfToken,
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: formData
+        });
+
+        const data = await response.json();
+        passwordForm.querySelectorAll(".field-error").forEach(el => el.remove());
+
+        if (data.success) {
+            window.location.href = data.redirect_url;
+        } else {
+            for (const [field, msg] of Object.entries(data.errors)) {
+                const input = passwordForm.querySelector(`input[name="${field}"]`);
+                const div = document.createElement("div");
+                div.className = "field-error";
+                div.innerText = Array.isArray(msg) ? msg.join(", ") : msg;
+                input?.after(div);
+            }
+        }
+    });
+
+    const deleteAccountForm = document.getElementById("edit-form-delete_account");
+    deleteAccountForm?.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const formData = new FormData(deleteAccountForm);
+        const csrfToken = formData.get("csrfmiddlewaretoken");
+        const messageBox = document.getElementById("message-delete_account");
+
+        try {
+            const response = await fetch(deleteAccountForm.action, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": csrfToken,
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                window.location.href = data.redirect_url;
+            } else {
+                messageBox.textContent = data.error || "Error al eliminar cuenta.";
+                messageBox.classList.add("error");
+            }
+        } catch {
+            messageBox.textContent = "Error de red al intentar eliminar la cuenta.";
+            messageBox.classList.add("error");
+        }
+    });
+});
+</script>
+
+

@@ -1,0 +1,88 @@
+{% load static %}
+{% load navbar_categories_tag %}
+{% navbar_categories as categories %}
+
+<link rel="stylesheet" href="{% static 'styles/components/navbar/sidebar/sidebar.css' %}">
+
+<!-- Secondary Navbar -->
+<div class="navbar navbar--secondary">
+    <ul class="navbar__menu-list navbar__menu-list--secondary">
+        <li class="navbar__menu-item" id="navbar__menu-toggle">
+            <button onclick="sidebar_toggle()" class="navbar__menu-link" id="menu-btn">
+                <img src="{% static 'assets/icons/menu.svg' %}" alt="Menú" class="sidebar__btn-icon">
+                <span class="sidebar__btn-text">Todo</span>
+            </button>
+        </li>
+        <li class="navbar__menu-item navbar__menu-item--hide-on-mobile"><a href="#" class="navbar__menu-link">Ofertas</a></li>
+        <li class="navbar__menu-item navbar__menu-item--hide-on-mobile"><a href="#" class="navbar__menu-link">Servicio al cliente</a></li>
+        {% if request.user.is_seller %}
+             <li class="navbar__menu-item"><a href="{% url 'shop:sell' %}" class="navbar__menu-link">Vender</a></li>
+        {% endif %}
+    
+    </ul>
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar">
+    <button id="close-btn" onclick="sidebar_remove()">✖</button>
+
+    <div class="sidebar__greeting">
+        {% if request.user.is_authenticated %}
+            <div class="sidebar__profile-photo-container">
+                {% if request.user.photo %}
+                    <img src="{{ request.user.photo.url }}" alt="User Icon" class="sidebar__profile-photo"> 
+                {% else %}
+                    <img src="{% static 'assets/icons/user.svg' %}" alt="User Icon" class="sidebar__profile-photo">
+                {% endif %}
+            </div>
+            <p class="sidebar__hello-name">Hola, {{ request.user.first_name|default:"Usuario" }}</p>
+        {% else %}
+            <p class="sidebar__hello-name">
+                Hola, invitado <a href="{% url 'users:login' %}" class="login-link">Inicia sesión</a>
+            </p>
+        {% endif %}
+    </div>
+
+    <hr>
+
+    <div class="sidebar__categories">
+        <h2 class="sidebar__category-list-title">Explora categorías</h2>
+        {% for category in categories %}
+            <div class="sidebar__category-list-box">
+                <a href="{% url 'shop:search_by_category' category.slug %}" class="category-item-link">
+                    <div class="category-item">
+                        <h3 class="category-item-name">{{ category.name }}</h3>
+                    </div>
+                    <div class="category-box-link"><span>&gt;</span></div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Overlay -->
+<div id="modalOverlay"></div>
+
+<!-- Sidebar JS -->
+<script>
+    function sidebar_toggle() {
+        document.getElementById('sidebar').classList.add('open');
+        document.getElementById('modalOverlay').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function sidebar_remove() {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('modalOverlay').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('modalOverlay');
+        const menuBtn = document.getElementById('menu-btn');
+        if (!sidebar.contains(event.target) && !menuBtn.contains(event.target)) {
+            sidebar_remove();
+        }
+    });
+</script>

@@ -1,0 +1,154 @@
+{% extends "layouts/base.html" %}
+{% load humanize %}
+{% load static %}
+
+{% block title %}Resumen del pedido{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'styles/pages/orders/continue_order.css' %}">
+{% endblock %}
+
+{% block content %}
+    {% include "components/navbar/navbar.html" %}
+
+    <div class="order-container">
+        <h2 class="order-title">Resumen del pedido</h2>
+
+        <!-- Advertencia de stock -->
+        {% if out_of_stock_items %}
+            <div class="order-warning">
+                <p class="order-warning1-title order-warning-title">¡Atención!</p> Algunos productos no tienen suficiente stock:
+                <ul class="order-warning-list">
+                    {% for product in out_of_stock_items %}
+                        <li>{{ product.name }} — Disponible: {{ product.stock }}</li>
+                    {% endfor %}
+                </ul>
+                <a href="{% url 'shop:cart_detail' %}" class="order-back-btn">Volver al carrito</a>
+            </div>
+        {% endif %}
+
+        <!-- Tabla de productos -->
+        {% if items %}
+            <div class="order-table-wrapper">
+                <table class="order-table">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Precio unitario</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                            <tr>
+                                <td>{{ item.product.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>${{ item.product.price|floatformat:0|intcomma }}</td>
+                                <td>${{ item.total|floatformat:0|intcomma }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="3" class="order-total-label">Total:</td>
+                            <td class="order-total-amount">${{ total|floatformat:0|intcomma }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% endif %}
+
+        <!-- Datos financieros del usuario -->
+        <div class="order-user-financials">
+            <p>Crédito disponible: <strong>${{ credit|floatformat:0|intcomma }}</strong></p>
+            <p>Deuda actual: <strong>${{ debt|floatformat:0|intcomma }}</strong></p>
+
+            {% if has_enough_credit %}
+                <p>Crédito restante si realiza el pedido:
+                    <strong>${{ remaining_credit|floatformat:0|intcomma }}</strong>
+                </p>
+            {% else %}
+                <p class="order-warning2-title order-warning-title"><strong>No tiene crédito suficiente para este pedido.</strong></p>
+            {% endif %}
+        </div>
+
+        <!-- Botón de pago físico -->
+        {% if show_physical_payment %}
+          <form method="post"
+                action="{% url 'orders:order_create' %}"
+                class="order-confirm-form">
+                {% csrf_token %}
+                <button type="submit" class="order-confirm-btn">Pagar en físico</button>
+            </form>
+        {% endif %}
+
+        <!-- Botón confirmar con AJAX -->
+        {% if can_continue %}
+            <form id="order-confirm-form" class="order-confirm-form">
+                {% csrf_token %}
+                <button type="submit" id="confirm-btn" class="order-confirm-btn">Confirmar pedido</button>
+            </form>
+            <div id="order-response" class="order-response"></div>
+        {% endif %}
+    </div>
+
+    {% include "components/footer.html" %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+const form = document.getElementById('order-confirm-form');
+const responseBox = document.getElementById('order-response');
+const confirmBtn = document.getElementById('confirm-btn');
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        for (let cookie of document.cookie.split(';')) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    confirmBtn.disabled = true;
+    confirmBtn.innerText = "Procesando...";
+
+    fetch("{% url 'orders:order_create' %}", {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Accept': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "Confirmar pedido";
+
+        if (data.success) {
+            responseBox.innerHTML = `<p class="success">✅ ${data.message}</p>`;
+            setTimeout(() => {
+                window.location.href = "{% url 'orders:order_detail' %}";
+            }, 1000);
+        } else {
+            responseBox.innerHTML = `<p class="error">❌ ${data.error}</p>`;
+        }
+    })
+    .catch(err => {
+        confirmBtn.disabled = false;
+        confirmBtn.innerText = "Confirmar pedido";
+        responseBox.innerHTML = `<p class="error">⚠️ Error al procesar el pedido.</p>`;
+        console.error(err);
+    });
+});
+</script>
+
+{% endblock %}

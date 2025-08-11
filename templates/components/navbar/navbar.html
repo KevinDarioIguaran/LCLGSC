@@ -1,0 +1,104 @@
+{% load static %}
+{% load navbar_cart %}
+{% cart_tag as cart %}
+{% load navbar_categories_tag %}
+{% navbar_categories as categories %}
+
+<link rel="stylesheet" href="{% static 'styles/components/navbar/navbar.css' %}">
+
+<!-- Top Mobile Bar -->
+<div class="navbar__top-mobile">
+    <div class="navbar__logo">
+        <a href="{% url 'home:home' %}">
+            <img src="{% static 'assets/icons/favicon.ico' %}" alt="Logo" class="navbar__logo-img">
+        </a>
+    </div>
+    <div>
+        <p class="name-institution">
+            Luis  Carlos 
+        </p>
+    </div>
+    <div  class="navbar__cart-mobile-link">
+        <a href="{% url 'shop:cart_detail' %}" class="navbar__cart-icon">
+            <img src="{% static 'assets/icons/cart.svg' %}" alt="Carrito" class="navbar__menu-icon">
+            <span class="cart-count">
+                {% if cart.total_items > 9 %} 9+
+                {% elif cart.total_items %} {{ cart.total_items }}
+                {% else %} 0
+                {% endif %}
+            </span>
+        </a>
+        {% if request.user.is_authenticated %}
+            <li class="navbar__menu-item" id="user">
+                <a href="{% url 'users:show_account' %}" class="navbar__menu-link">
+                    <img src="{% static 'assets/icons/user.svg' %}" alt="'User Icon' " class="navbar__menu-icon">
+                </a>
+            </li>
+        {% else %}
+            <li class="navbar__menu-item navbar__menu-item--mobile" id="user">
+                <a href="{% url 'users:login' %}" class="navbar__menu-link">
+                    <img src="{% static 'assets/icons/user.svg' %}" alt="User Icon" class="navbar__menu-icon">
+                </a>
+            </li>
+        {% endif %}
+    </div>
+
+
+</div>
+
+<!-- Main Navbar -->
+<nav class="navbar" id="navbar">
+    <!-- Logo -->
+    <div class="navbar__logo" id="navbar__logo">
+        <a href="{% url 'home:home' %}">
+            <img src="{% static 'assets/icons/favicon.ico' %}" alt="Logo" class="navbar__logo-img">
+        </a>
+    </div>
+
+    <!-- Search -->
+    <form class="navbar__search" action="{% url 'shop:search' %}" method="GET">
+        <input type="text" name="name_product" placeholder="Buscar productos..." aria-label="Buscar productos" class="navbar__search-input">
+        <button type="submit" class="navbar__search-button">
+            <img src="{% static 'assets/icons/search.svg' %}" alt="Buscar" class="navbar__search-icon">
+        </button>
+    </form>
+
+    <!-- Menu -->
+    <ul class="navbar__menu-list" id="navbar__menu-list">
+        <!-- User -->
+        <li class="navbar__menu-item">
+            {% if request.user.is_authenticated %}
+                <li class="navbar__menu-item" id="user">
+                    <a href="{% url 'users:show_account' %}" class="navbar__menu-link">
+                        <img src="{% static 'assets/icons/user.svg' %}" alt="'User Icon' " class="navbar__menu-icon">
+                    </a>
+                </li>
+            {% else %}
+                <a href="{% url 'users:login' %}" class="navbar__menu-link">
+                    <div class="user_icon-container">
+                        <img src="{% static 'assets/icons/user.svg' %}" alt="User" class="navbar__menu-icon">    
+                    </div>
+                    <span>Hola, anónimo</span>
+                </a>
+            {% endif %}
+        </li>
+
+        <!-- Cart (solo visible en desktop) -->
+        <li class="navbar__menu-item navbar__cart-desktop">
+            <a href="{% url 'shop:cart_detail' %}" class="navbar__menu-link">
+                <div class="navbar__cart-icon">
+                    <img src="{% static 'assets/icons/cart.svg' %}" alt="Carrito" class="navbar__menu-icon">
+                    <span class="cart-count">
+                        {% if cart.total_items > 9 %} 9+
+                        {% elif cart.total_items %} {{ cart.total_items }}
+                        {% else %} 0
+                        {% endif %}
+                    </span>
+                </div>
+            </a>
+        </li>
+    </ul>
+</nav>
+
+<!-- Sidebar -->
+{% include 'components/navbar/sidebar/sidebar.html' %}

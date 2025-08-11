@@ -1,0 +1,118 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% load navbar_cart %}
+{% cart_tag as cart %}
+{% load humanize %}
+{% load cart_update %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'styles/pages/shop/cart/cart_detail.css' %}">
+{% endblock %}
+
+{% block content %}
+    {% include 'components/navbar/navbar.html' %}
+
+    <div class="orders">
+        <div class="orders-box">
+            <div class="orders__header">
+                <div class="orders__title-text">
+                    <p>Carrito ({{ cart.total_items }})</p>
+                </div>
+                <div class="orders__total-text">
+                    <p>Total: <strong>{{ cart.get_total|floatformat:0|intcomma }} COP</strong></p>
+                </div>
+            </div>
+
+            <div class="orders__content">
+                <div class="orders__content-list">
+                    {% if items %}
+                        <ul>
+                            <div>
+                                {% for item in items %}
+                                    <li class="product">
+                                        <a href="{{ item.product.get_absolute_url }}">
+                                            <img src="{{ item.product.get_image_url }}" alt="{{ item.product.name }}" class="product__img">
+                                        </a>
+                                        <div>
+                                            <div>
+                                                <strong>{{ item.product.name }}</strong><br>
+                                                <small>{{ item.quantity }}x – {{ item.product.price|floatformat:0|intcomma }} COP</small><br>
+                                                <small style="color: gray;">Disponibles: {{ item.product.stock }}</small>
+                                            </div>
+
+                                            <div>
+                                                {% with form=update_amount_items|get_item_update:item.product.id %}
+                                                    <form action="{% url 'shop:cart_update' item.product.id %}" method="post" class="update-form">
+                                                        {% csrf_token %}
+                                                        <div class="input-wrapper">
+                                                           {{ form.update }} 
+                                                        </div>
+                                                        <button type="submit" class="btn-continue">Actualizar</button>
+                                                    </form>
+                                                {% endwith %}
+                                            </div>
+                                        </div>
+
+                                        <form action="{% url 'shop:cart_remove' item.product.id %}" method="post" class="profile__orders-link">
+                                            {% csrf_token %}
+                                            <button type="submit">Eliminar</button>
+                                        </form>
+                                    </li>
+                                {% endfor %}                                
+                            </div>
+                        </ul>
+                    {% else %}
+                        <p>Tu carrito está vacío.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="orders__sidebar">
+            <div class="orders__sidebar-box">
+                <div class="orders__continue">
+                    <div class="orders__continue-title">
+                        <p>Resumen:</p>           
+                    </div>
+                    <div class="orders__continue-info">
+                        <p>Total de productos: <strong>{{ cart.total_items }}</strong></p>
+                        <p>Total a pagar: <strong>{{ cart.get_total|floatformat:0|intcomma }} COP</strong></p>
+                    </div>
+                    <a href="{% url 'orders:order_continue' %}">
+                        <button class="btn-continue">Continuar con el pedido</button>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if related_products %}
+        <div class="products">
+            <div class="products__title">
+                <p>Productos que podrían interesarte</p>
+            </div>
+            <div class="products__list">
+                {% for product in related_products %}
+                    <div class="product-card">
+                        <a href="{{ product.get_absolute_url }}" class="links_black ">
+                            <img src="{{ product.get_image_url  }}" alt="{{ product.name }}" class="product-card__img">
+                            <h3 class="product-card__name">{{ product.name }}</h3>
+                            <p class="product-card__price">{{ product.price|floatformat:0|intcomma }} COP</p>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    {% if request.user_agent.is_mobile %}
+        {% include 'account/profile/mobile/utilities/menu-bottom.html' %}
+    {% else %}
+        {% include 'components/footer.html' %}
+    {% endif %}
+
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/shop/cart/cart_update.js' %}"></script>
+{% endblock %}

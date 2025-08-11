@@ -1,0 +1,72 @@
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de entorno virtual
+venv/
+ENV/
+env/
+.venv/
+
+# Archivos de configuración de IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de base de datos SQLite (si usas localmente)
+db.sqlite3
+db.sqlite3-journal
+
+# Archivos de migraciones generados
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Archivos de logs
+*.log
+
+# Archivos de compilación / media generada
+staticfiles/
+static/
+media/
+assets/
+
+# Archivos de Celery y cache
+celerybeat-schedule
+celerybeat.pid
+*.pid
+
+# Archivos de configuración local
+.env
+.env.local
+.env.prod
+.env.dev
+*.env
+
+# Archivos de cobertura y pruebas
+.coverage
+.tox/
+pytest_cache/
+htmlcov/
+
+# Archivos de Docker
+docker-compose.override.yml
+.docker/
+
+# Archivos generados por pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Archivos generados por Redis o cache local
+dump.rdb
+
+# Archivos de compilación Cython
+*.c
+*.so
+
+docker-compose.yaml

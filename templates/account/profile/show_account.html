@@ -1,0 +1,21 @@
+{% extends 'layouts/base.html' %}
+
+{% load static %}
+
+{% block title %}Tu cuenta{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'styles/account/profile/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+    {% include 'components/navbar/navbar.html' %}
+
+    <div class="profile-main-container">
+        {% include 'components/account/_user_panel.html' %}
+    </div>
+
+    {% block item %}{% endblock %}
+    {% include 'components/footer.html' %}
+{% endblock %}
+
