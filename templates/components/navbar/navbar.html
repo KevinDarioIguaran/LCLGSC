@@ -15,9 +15,10 @@
     </div>
     <div>
         <p class="name-institution">
-            Luis  Carlos 
+            Café web escolar L.C.G.S
         </p>
     </div>
+
     <div  class="navbar__cart-mobile-link">
         <a href="{% url 'shop:cart_detail' %}" class="navbar__cart-icon">
             <img src="{% static 'assets/icons/cart.svg' %}" alt="Carrito" class="navbar__menu-icon">
@@ -46,6 +47,7 @@
 
 </div>
 
+
 <!-- Main Navbar -->
 <nav class="navbar" id="navbar">
     <!-- Logo -->
@@ -54,6 +56,7 @@
             <img src="{% static 'assets/icons/favicon.ico' %}" alt="Logo" class="navbar__logo-img">
         </a>
     </div>
+
 
     <!-- Search -->
     <form class="navbar__search" action="{% url 'shop:search' %}" method="GET">

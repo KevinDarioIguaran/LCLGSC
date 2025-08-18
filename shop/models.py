@@ -201,6 +201,11 @@ class Product(models.Model):
             return self.image.url
         return None
 
+    def delete(self, *args, **kwargs):
+        if self.image:
+            self.image.delete(save=False)
+        super().delete(*args, **kwargs)
+
 class ProductReview(models.Model):
     """
     Modelo para almacenar valoraciones de productos.
@@ -292,11 +297,17 @@ class ProductReview(models.Model):
 
     def delete(self, *args, **kwargs):
         """
-        Elimina la valoración y ajusta el contador de valoraciones del producto.
+        Elimina la valoración, borra la imagen y ajusta el contador de valoraciones del producto.
         """
+        if self.image:
+            self.image.delete(save=False)
+
         super().delete(*args, **kwargs)
-        Product.objects.filter(id=self.product.id).update(reviews_count=models.F('reviews_count') - 1)
-    
+
+        Product.objects.filter(id=self.product.id).update(
+            reviews_count=models.F('reviews_count') - 1
+        )
+
     def get_image_url(self):
         if self.image:
             return self.image.url
@@ -441,3 +452,8 @@ class ShowBestOffers(models.Model):
         if not self.category:
             return "Oferta sin categoría"
         return f"Oferta en  {self.category.name} ({'Activa' if self.active else 'Inactiva'})"
+    
+    def delete(self, *args, **kwargs):
+        if self.image:
+            self.image.delete(save=False)
+        super().delete(*args, **kwargs)

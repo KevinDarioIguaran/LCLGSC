@@ -18,6 +18,16 @@
                 <div class="edit-info-field">Apellido</div>
                 <div class="edit-info-value">{{ user.last_name }}</div>
             </div>
+            <div class="edit-info-row">
+                <div class="edit-info-field">Ver ordenes</div>
+                <div class="edit-info-action">
+                    <form method="post" action="{% url 'orders:order_detail' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="admin-btn">Ver</button>
+                    </form>
+                </div>
+            </div>
+
 
             {% if user.is_seller %}
                 <div class="edit-info-row">
@@ -58,7 +68,7 @@
             <div class="edit-info-row" id="row-password">
                 <div class="edit-info-field">Contraseña</div>
                 <div class="edit-info-action">
-                    <button class="admin-btn" type="button" onclick="hide_byID('row-password');showOrhide_byID('edit-form-password')">Editar</button>
+                    <button class="admin-btn" type="button" onclick="showOrhide_byID('edit-form-password')">Editar</button>
                 </div>
             </div>
             <form id="edit-form-password" class="edit-info-edit-form" method="post" action="{% url 'users:change_password' %}">
@@ -67,7 +77,7 @@
                 <input type="password" name="new_password1" placeholder="Nueva contraseña" required>
                 <input type="password" name="new_password2" placeholder="Repetir nueva contraseña" required>
                 <button type="submit" class="admin-btn">Guardar</button>
-                <button type="button" class="admin-btn" onclick="hide_byID('edit-form-password');show_byID('row-password')">Cancelar</button>
+                <button type="button" class="admin-btn" onclick="showOrhide_byID('edit-form-password')">Cancelar</button>
             </form>
 
             <!-- Cerrar sesión -->
@@ -85,7 +95,7 @@
             <div class="edit-info-row" id="row-delete_account">
                 <div class="edit-info-field">Eliminar cuenta</div>
                 <div class="edit-info-action">
-                    <button class="admin-btn" type="button" onclick="hide_byID('row-delete_account');showOrhide_byID('edit-form-delete_account')">Eliminar</button>
+                    <button class="admin-btn" type="button" onclick="showOrhide_byID('edit-form-delete_account')">Eliminar</button>
                 </div>
             </div>
 
@@ -93,7 +103,7 @@
                 {% csrf_token %}
                 <input type="password" name="password" placeholder="Contraseña" required>
                 <button type="submit" class="admin-btn">Eliminar</button>
-                <button type="button" class="admin-btn" onclick="hide_byID('edit-form-delete_account');show_byID('row-delete_account')">Cancelar</button>
+                <button type="button" class="admin-btn" onclick="showOrhide_byID('edit-form-delete_account')">Cancelar</button>
                 <p class="form-message" id="message-delete_account"></p>
             </form>
         </div>

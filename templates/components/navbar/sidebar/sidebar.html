@@ -13,8 +13,6 @@
                 <span class="sidebar__btn-text">Todo</span>
             </button>
         </li>
-        <li class="navbar__menu-item navbar__menu-item--hide-on-mobile"><a href="#" class="navbar__menu-link">Ofertas</a></li>
-        <li class="navbar__menu-item navbar__menu-item--hide-on-mobile"><a href="#" class="navbar__menu-link">Servicio al cliente</a></li>
         {% if request.user.is_seller %}
              <li class="navbar__menu-item"><a href="{% url 'shop:sell' %}" class="navbar__menu-link">Vender</a></li>
         {% endif %}

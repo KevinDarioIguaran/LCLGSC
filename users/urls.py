@@ -2,7 +2,6 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
-from django.contrib.auth import views as auth_views
 
 app_name = 'users' 
 
@@ -13,7 +12,7 @@ urlpatterns = [
     path("perfil/cambiar-contraseña/", views.change_password_view, name="change_password"),
     path("perfil/crear-contraseña/", views.set_password, name="set_password"),
     path("perfil/eliminar-cuenta/", views.delete_account_view, name="delete_account"),
-    path("perfil/logout/", auth_views.LogoutView.as_view(), name="logout"),
+    path("perfil/logout/", views.logout_view, name="logout"),
 ]
 
 if settings.DEBUG:

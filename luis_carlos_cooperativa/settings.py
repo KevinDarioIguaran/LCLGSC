@@ -35,6 +35,7 @@ CSRF_TRUSTED_ORIGINS = [
     "http://192.168.1.11:9000",
     "http://localhost:9000",
     "http://127.0.0.1:9000"
+    "https://5edfab3ff348.ngrok-free.app"
 ]
 
 
@@ -49,6 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
+
+    'background_task',
 
 
 
@@ -91,6 +94,13 @@ WSGI_APPLICATION = 'luis_carlos_cooperativa.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
 
 
 # Password validation
@@ -117,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Bogota'
 
 USE_I18N = True
 
@@ -127,7 +137,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-import os
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = (
@@ -155,7 +164,6 @@ VALID_EXTENSIONS_IMAGES = {'jpg', 'jpeg', 'png', 'webp'}
 AUTH_USER_MODEL = 'users.CustomUser'
 
 
-CELERY_BROKER_URL = 'redis://localhost:6379/0'
 
 
 

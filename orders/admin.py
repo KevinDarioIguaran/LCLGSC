@@ -8,7 +8,7 @@ class ReadOnlyOrderItemInline(admin.TabularInline):
     can_delete = False
     show_change_link = False
     
-    fields = ['product', 'price', 'quantity', 'get_total_cost' ]
+    fields = ['product', 'price', 'quantity', 'get_total_cost']
     readonly_fields = fields  
 
     def has_add_permission(self, request, obj=None):
@@ -40,6 +40,7 @@ class OrderAdmin(admin.ModelAdmin):
                 'user',
                 'created',
                 'arrival_time',
+                'school_address', 
                 'status',
                 'paid',
                 'total_amount',
@@ -47,7 +48,8 @@ class OrderAdmin(admin.ModelAdmin):
         }),
     )
 
-    readonly_fields = ['id', 'created', 'total_amount', 'user']
+    readonly_fields = ['id', 'created', 'total_amount', 'user', 'school_address']
+
 
     inlines = [ReadOnlyOrderItemInline]
 

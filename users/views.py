@@ -196,17 +196,19 @@ def delete_account_view(request):
     if not password or not user.check_password(password):
         return JsonResponse({"success": False, "error": "Contraseña incorrecta."}, status=400)
 
-    photo_path = user.photo.path if user.photo and user.photo.name else None
-
     try:
         logout(request)
         user.delete()
 
-        if photo_path and os.path.isfile(photo_path):
-            if os.path.commonpath([photo_path, settings.MEDIA_ROOT]) == settings.MEDIA_ROOT:
-                os.remove(photo_path)
     except Exception:
         return JsonResponse({"success": False, "error": "Error interno al eliminar cuenta."}, status=500)
 
     return JsonResponse({"success": True, "redirect_url": reverse("home:home")})
 
+@login_required
+def logout_view(request):
+    """
+    Cierra la sesión del usuario y lo redirige a la página de inicio.
+    """
+    logout(request)
+    return redirect(reverse("home:home"))

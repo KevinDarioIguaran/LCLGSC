@@ -2,7 +2,7 @@ import re
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseBadRequest, JsonResponse, Http404
-from django.contrib.auth.decorators import login_required  
+from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
 from django.contrib.auth import logout
@@ -17,6 +17,10 @@ from luis_carlos_cooperativa.is_mobile import get_profile_template
 
 @login_required
 def continue_order_view(request):
+    """
+    Muestra el resumen del pedido, el crédito del usuario
+    y permite ingresar la dirección dentro del colegio.
+    """
     try:
         cart = Cart.objects.get(user=request.user)
     except Cart.DoesNotExist:
@@ -26,7 +30,7 @@ def continue_order_view(request):
     if not items.exists():
         return redirect('shop:cart_detail')
 
-    total = 0
+    total = Decimal('0')
     out_of_stock_items = []
 
     for item in items:
@@ -42,6 +46,8 @@ def continue_order_view(request):
     remaining_credit = credit - total if has_enough_credit else 0
     show_physical_payment = debt > 0 or not has_enough_credit
 
+    full_name = getattr(request.user, 'get_full_name', lambda: '')()  # Nombre completo
+
     context = {
         'items': items,
         'total': total,
@@ -52,16 +58,20 @@ def continue_order_view(request):
         'can_continue': has_enough_credit and not out_of_stock_items,
         'out_of_stock_items': out_of_stock_items,
         'show_physical_payment': show_physical_payment,
+        'full_name': full_name,
+        'school_address_choices':  Order._meta.get_field('school_address').choices
     }
 
     return render(request, "pages/orders/continue_order.html", context)
 
 
 
-
 @login_required
 @require_POST
 def order_create_view(request):
+    """
+    Crea un pedido a partir del carrito y registra la dirección dentro del colegio.
+    """
     user = request.user
     cart = get_object_or_404(Cart, user=user)
 
@@ -73,7 +83,12 @@ def order_create_view(request):
     if user.credit < total:
         return JsonResponse({"error": "Saldo insuficiente."}, status=400)
 
-    # Preparar datos para la orden
+    school_address = request.POST.get("school_address")
+    valid_choices = dict(Order._meta.get_field("school_address").choices)
+
+    if school_address not in valid_choices:
+        return JsonResponse({"error": "Dirección escolar inválida."}, status=400)
+
     products = []
     for item in cart.cart_items.select_related('product'):
         product = item.product
@@ -84,7 +99,7 @@ def order_create_view(request):
 
         products.append({
             "product_id": product.id,
-            "price": str(product.price),  # JSON-safe para Celery
+            "price": str(product.price),
             "quantity": item.quantity,
         })
 
@@ -93,7 +108,6 @@ def order_create_view(request):
             user.credit -= total
             user.save()
 
-            # Descontar stock
             for item in cart.cart_items.select_related("product"):
                 product = item.product
                 if item.quantity > product.stock:
@@ -101,20 +115,25 @@ def order_create_view(request):
                 product.stock -= item.quantity
                 product.save()
 
-            # Vaciar el carrito
             cart.cart_items.all().delete()
 
-            # Crear la orden (tarea en segundo plano)
-            create_order.delay(user.code, products, paid=True)
+            create_order(
+                user.code,
+                products,
+                paid=True,
+                school_address=school_address
+            )
 
         return JsonResponse({"success": "Pago procesado y orden creada."})
     except Exception as e:
         return JsonResponse({"error": f"Error interno: {str(e)}"}, status=500)
 
 
-
 @login_required
 def order_detail_view(request):
+    """
+    Muestra todos los pedidos del usuario.
+    """
     orders = Order.objects.filter(user=request.user)
     form_search_order = SearchOrderForm()
 
@@ -128,6 +147,9 @@ def order_detail_view(request):
 
 @login_required
 def order_search_view(request):
+    """
+    Permite buscar pedidos por nombre de producto.
+    """
     form = SearchOrderForm(request.POST or None)
     orders = Order.objects.filter(user=request.user)
     orders_items = orders.none()
@@ -149,6 +171,9 @@ def order_search_view(request):
 @login_required
 @require_POST
 def order_delete_view(request, order_id):
+    """
+    Elimina un pedido. Si no está pendiente, desactiva al usuario por seguridad.
+    """
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
     try:

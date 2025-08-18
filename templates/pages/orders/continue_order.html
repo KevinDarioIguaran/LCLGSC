@@ -5,7 +5,7 @@
 {% block title %}Resumen del pedido{% endblock %}
 
 {% block extra_styles %}
-    <link rel="stylesheet" href="{% static 'styles/pages/orders/continue_order.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/pages/orders/order.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -73,23 +73,29 @@
             {% endif %}
         </div>
 
-        <!-- Botón de pago físico -->
-        {% if show_physical_payment %}
-          <form method="post"
-                action="{% url 'orders:order_create' %}"
-                class="order-confirm-form">
-                {% csrf_token %}
-                <button type="submit" class="order-confirm-btn">Pagar en físico</button>
-            </form>
-        {% endif %}
-
-        <!-- Botón confirmar con AJAX -->
+        <!-- Dirección del usuario (input) -->
         {% if can_continue %}
             <form id="order-confirm-form" class="order-confirm-form">
                 {% csrf_token %}
+                <select name="school_address" id="school_address" required>
+                    <option value="">--- Seleccione ---</option>
+                    {% for value, label in school_address_choices %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
                 <button type="submit" id="confirm-btn" class="order-confirm-btn">Confirmar pedido</button>
             </form>
             <div id="order-response" class="order-response"></div>
+        {% endif %}
+
+        <!-- Botón de pago físico -->
+        {% if show_physical_payment %}
+            <form method="post"
+                  action="{% url 'orders:order_create' %}"
+                  class="order-confirm-form">
+                {% csrf_token %}
+                <button type="submit" class="order-confirm-btn">Pagar en físico</button>
+            </form>
         {% endif %}
     </div>
 
@@ -121,12 +127,15 @@ form.addEventListener('submit', function (event) {
     confirmBtn.disabled = true;
     confirmBtn.innerText = "Procesando...";
 
+    const formData = new FormData(form);
+
     fetch("{% url 'orders:order_create' %}", {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken'),
             'Accept': 'application/json',
-        }
+        },
+        body: formData
     })
     .then(response => response.json())
     .then(data => {
@@ -150,5 +159,4 @@ form.addEventListener('submit', function (event) {
     });
 });
 </script>
-
 {% endblock %}

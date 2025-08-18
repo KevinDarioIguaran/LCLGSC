@@ -1,19 +1,29 @@
+from decimal import Decimal
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError
-from celery import shared_task
 
 from .models import Order, OrderItem
 from shop.models import Product
 from django.contrib.auth import get_user_model
+from background_task import background
 
 User = get_user_model()
 
 
-@shared_task
-def create_order(user_code, products: list, paid: bool = False):
+def create_order(user_code, products: list, paid: bool = False, school_address: str = ""):
+    """
+    Crea un pedido de manera asincrónica.
+    """
     user = get_object_or_404(User, code=user_code)
 
-    order = Order.objects.create(user=user, paid=paid)
+    if not school_address:
+        raise ValidationError("La dirección del colegio no puede estar vacía.")
+
+    order = Order.objects.create(
+        user=user,
+        paid=paid,
+        school_address=school_address
+    )
 
     for p in products:
         try:
@@ -24,6 +34,8 @@ def create_order(user_code, products: list, paid: bool = False):
         OrderItem.objects.create(
             order=order,
             product=product,
-            price=p["price"],
+            price=Decimal(p["price"]), 
             quantity=p["quantity"]
         )
+
+    return order
