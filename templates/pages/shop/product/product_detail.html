@@ -19,8 +19,8 @@
                     <div class="product-detail__seller-photo-container">
                         <img src="{{ product.seller.get_cooperative_logo_url}}" alt="Seller Profile Image" class="product-detail__seller-photo">
                     </div>
-                    
-                    <a href="#" class="product-detail__seller-name">{{ product.seller.get_cooperative_name}}</a>
+
+                    <p class="product-detail__seller-name">{{ product.seller.get_cooperative_name}}</p>
                 </div>
                 <p class="rating-details">
                     <span class="average-rating">
@@ -50,10 +50,11 @@
         <div class="cart">
             <div class="cart__box">
                 <p class="cart__box-price">{{ product.price|floatformat:0|intcomma }} COP</p>
-                {% if not form %}
-                    <p class="product__available-false">No disponible</p>
+                {% if product.stock > 0 %}
+                    <p class="product__available-message">Disponible {{ product.stock }}</p>
+                {% else %}
+                    <p class="product__available-message product__available-message--false">No disponible</p>
                 {% endif %}
-        
                 {% if form %}
                     <form action="{% url 'shop:cart_add' product.id %}" method="post" class="cart__actions">
                         {% csrf_token %}
@@ -64,25 +65,19 @@
                                     <option value="{{ i }}">{{ i }}</option>
                                 {% endfor %}
                             </select>
-                            <p class="cart__box-quantity_text">Disponible {{ product.stock }}</p>
                         </div>
-        
                         {% if error %}
                             <p class="message-error">{{ error }}</p>
                         {% endif %}
                         <button type="submit" class="cart__button">Agregar al carrito</button>
                     </form>
-
-                </div>
                 {% endif %}
             </div>
         </div>
-        
-
         <div class="product-detail__related-products">
             <h2 class="product-detail__related-products-title">Productos Relacionados</h2>
             <div class="product-detail__products-list">
-                {% for related_product in related_products %}
+                {% for related_product in related_products reversed %}
                     <div class="product-detail__item">
                         <a href="{% url 'shop:product_detail' id=related_product.id slug=related_product.slug %}" class="product-detail__item-link">
                             <img src="{{ related_product.get_image_url }}" alt="{{ related_product.name }}" class="product-detail__item-img">

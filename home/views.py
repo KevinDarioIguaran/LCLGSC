@@ -10,6 +10,7 @@ from shop.models import Product, Category, ShowBestOffers
 def home_view(request):
     categories_list = Category.objects.all()
 
+    best_offers = ShowBestOffers.objects.filter(active=True)
 
     category_products = {}
 
@@ -20,6 +21,7 @@ def home_view(request):
 
     context = {
         'category_products': category_products,
+        'best_offers': best_offers,
     }
 
     return render(request, 'pages/home/home.html', context)

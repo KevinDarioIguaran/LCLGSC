@@ -21,7 +21,7 @@
             <div class="edit-info-row">
                 <div class="edit-info-field">Ver ordenes</div>
                 <div class="edit-info-action">
-                    <form method="post" action="{% url 'orders:order_detail' %}">
+                    <form method="post" action="{% url 'orders:order_list' %}">
                         {% csrf_token %}
                         <button type="submit" class="admin-btn">Ver</button>
                     </form>

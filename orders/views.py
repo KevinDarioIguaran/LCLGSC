@@ -7,9 +7,10 @@ from django.views.decorators.http import require_POST
 from django.core.exceptions import ValidationError
 from django.contrib.auth import logout
 from django.db import transaction
+from django.db.models import F, Sum
 
 from .models import Order
-from shop.models import Cart
+from shop.models import Cart, Product, Category
 from .forms import SearchOrderForm
 from .tasks import create_order
 from luis_carlos_cooperativa.is_mobile import get_profile_template
@@ -46,7 +47,7 @@ def continue_order_view(request):
     remaining_credit = credit - total if has_enough_credit else 0
     show_physical_payment = debt > 0 or not has_enough_credit
 
-    full_name = getattr(request.user, 'get_full_name', lambda: '')()  # Nombre completo
+    full_name = getattr(request.user, 'get_full_name', lambda: '')()  
 
     context = {
         'items': items,
@@ -130,7 +131,7 @@ def order_create_view(request):
 
 
 @login_required
-def order_detail_view(request):
+def order_list_view(request):
     """
     Muestra todos los pedidos del usuario.
     """
@@ -172,20 +173,36 @@ def order_search_view(request):
 @require_POST
 def order_delete_view(request, order_id):
     """
-    Elimina un pedido. Si no está pendiente, desactiva al usuario por seguridad.
+    Elimina un pedido pendiente.
+    - Resta las ventas de productos y categorías.
+    - Devuelve el dinero al usuario.
+    - Restaura el stock de los productos.
     """
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    try:
-        order.delete()
-    except ValidationError:
-        user = request.user
-        user.is_active = False
-        user.save()
-        logout(request)
+    if order.status != "pending": 
         return HttpResponseBadRequest(
-            "No se puede eliminar un pedido que no esté pendiente. "
-            "Has sido desactivado por seguridad. Contacta al soporte."
+            "Solo se pueden eliminar pedidos pendientes."
         )
 
-    return redirect('orders:order_detail')
+    for item in order.items.all():
+        Product.objects.filter(id=item.product.id).update(
+            sales=F("sales") - item.quantity,
+            stock=F("stock") + item.quantity 
+        )
+
+        Category.objects.filter(id=item.product.category.id).update(
+            sales=F("sales") - item.quantity
+        )
+
+    total_amount = order.items.aggregate(
+        total=Sum(F("price") * F("quantity"))
+    )["total"] or Decimal("0.00")
+
+    if hasattr(request.user, "credit"):
+        request.user.credit = F("credit") + total_amount
+        request.user.save(update_fields=["credit"])
+
+    order.delete()
+
+    return redirect("orders:order_list")  

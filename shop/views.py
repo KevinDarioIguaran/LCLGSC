@@ -7,10 +7,12 @@ from django.urls import reverse
 from django.contrib import messages
 from django.db.models import Q
 from django.http import JsonResponse
+from django.db.models import Avg
 
 from .models import Category, Product, Cart, CartItem, Subcategory
 from .forms import SubmitProductForm, ProductFilterForm, CartAddProductForm, CartUpdateProductForm
 from luis_carlos_cooperativa.utils.validators import validate_images
+
 
 def product_detail(request, id, slug, error=None):
     quantity_range = None
@@ -34,6 +36,22 @@ def product_detail(request, id, slug, error=None):
         '1_stars_percent': calc_star_percentage(1),
     }
 
+    related_products_qs = (
+        Product.objects.filter(category=product.category, available=True)
+        .exclude(id=product.id)
+        .filter(stock__gt=0) 
+        .annotate(avg_rating=Avg("reviews__rating"))
+        .order_by("avg_rating", "sales") 
+    )
+
+    related_products = []
+
+    if related_products_qs.exists():
+        if related_products_qs.count() > 20:
+            related_products = related_products_qs[:20]
+        else:
+            related_products = related_products_qs[:10] 
+
     context = {
         'product': product,
         'product_id': product.id,
@@ -42,7 +60,7 @@ def product_detail(request, id, slug, error=None):
         'average_rating': product.average_rating,
         'review_count': product.review_count,
         'seller_user': product.get_name_seller,
-        'related_products': Product.objects.filter(category=product.category).exclude(id=product.id),
+        'related_products': related_products,
         'star_percentages': star_percentages,
     }
 

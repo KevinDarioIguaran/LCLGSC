@@ -145,7 +145,7 @@ form.addEventListener('submit', function (event) {
         if (data.success) {
             responseBox.innerHTML = `<p class="success">✅ ${data.message}</p>`;
             setTimeout(() => {
-                window.location.href = "{% url 'orders:order_detail' %}";
+                window.location.href = "{% url 'orders:order_list' %}";
             }, 1000);
         } else {
             responseBox.innerHTML = `<p class="error">❌ ${data.error}</p>`;

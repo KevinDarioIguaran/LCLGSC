@@ -34,8 +34,9 @@ ALLOWED_HOSTS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://192.168.1.11:9000",
     "http://localhost:9000",
-    "http://127.0.0.1:9000"
-    "https://5edfab3ff348.ngrok-free.app"
+    "http://127.0.0.1:9000",
+    "https://5edfab3ff348.ngrok-free.app",
+    "http://192.168.1.18:9000"
 ]
 
 
@@ -53,7 +54,7 @@ INSTALLED_APPS = [
 
     'background_task',
 
-
+    "django_extensions",
 
     'shop',
     'users',

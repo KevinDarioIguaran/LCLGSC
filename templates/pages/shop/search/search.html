@@ -3,6 +3,7 @@
 
 {% block extra_styles %}
     <link rel="stylesheet" href="{% static 'styles/pages/shop/search/search.css' %}">
+    <link rel="stylesheet" href="{% static 'styles/pages/home/home.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -18,7 +19,7 @@
                 <li class="search-results__category">
                     <ul class="search-results__product-list">
                         {% for product in products %}
-                        <li class="search-results__product">
+                        <li class="search-results__product product">
                             <a href="{{ product.get_absolute_url }}" class="search-results__product-link">
                                 <img src="{% if product.get_image_url %}{{ product.get_image_url }}{% else %}{% static 'img/no_image.png' %}{% endif %}" class="search-results__product-image" alt="{{ product.name }}">
                             </a>

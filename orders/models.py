@@ -5,7 +5,7 @@ from datetime import date
 
 from django.db import models
 from django.core.exceptions import ValidationError
-from users.models import CustomUser  # ajusta la importación según tu proyecto
+from users.models import CustomUser  
 
 class Order(models.Model):
     user = models.ForeignKey(
