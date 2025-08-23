@@ -1,45 +1,43 @@
 {% extends 'layouts/base.html' %}
+{% load humanize %}
 {% load static %}
 
+{% block title %}Resultados de búsqueda - Rurales Colombia{% endblock %}
+
 {% block extra_styles %}
-    <link rel="stylesheet" href="{% static 'styles/pages/shop/search/search.css' %}">
     <link rel="stylesheet" href="{% static 'styles/pages/home/home.css' %}">
 {% endblock %}
 
 {% block content %}
     {% include 'components/navbar/navbar.html' %}
-
-    {% if search_results %}
-    <div class="search">
-                {% include 'pages/shop/search/search_left.html' with subcategories=subcategories %}
-        <div class="search-results">
-            {% if categories %}
-            <ul class="search-results__category-list">
-                {% for category, products in categories.items %}
-                <li class="search-results__category">
-                    <ul class="search-results__product-list">
-                        {% for product in products %}
-                        <li class="search-results__product product">
-                            <a href="{{ product.get_absolute_url }}" class="search-results__product-link">
-                                <img src="{% if product.get_image_url %}{{ product.get_image_url }}{% else %}{% static 'img/no_image.png' %}{% endif %}" class="search-results__product-image" alt="{{ product.name }}">
-                            </a>
-                            <h3 class="search-results__product-name">{{ product.name }}</h3>
-                            <p class="search-results__product-price">Precio: {{ product.price }} COP</p>
-                            <button type="submit" class="btn-add-cart">
-                                Añadir al carrito
-                            </button>
-                        </li>
+        {% if search_results %}
+            <div class="all-category">
+                <h2>Resultados</h2>
+                <div class="item">
+                    {% if categories %}
+                        {% for category, products in categories.items %}
+                            {% for product in products %}
+                                <div class="product">
+                                    <a href="{{ product.get_absolute_url }}">
+                                        <img src="{% if product.get_image_url %}{{ product.get_image_url }}{% else %}{% static 'img/no_image.png' %}{% endif %}" alt="{{ product.name }}">
+                                    </a>
+                                    <h3>{{ product.name }}</h3>
+                                    <p>{{ product.price|floatformat:0|intcomma }} COP</p>
+                                </div>
+                            {% endfor %}
                         {% endfor %}
-                    </ul>
-                </li>
-                {% endfor %}
-            </ul>
-            {% else %}
-            <p>No se encontraron productos.</p>
-            {% endif %}
-        </div>
-    </div>
-    {% endif %}
+                    {% else %}
+                        <p>No se encontraron productos.</p>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <p>No se encontraron resultados para tu búsqueda.</p>
+        {% endif %}
 
     {% include 'components/footer.html' %}
+{% endblock %}
+
+{% block extra_scripts %}
+    <script src="{% static 'js/search.js' %}" defer></script>
 {% endblock %}

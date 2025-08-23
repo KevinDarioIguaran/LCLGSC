@@ -52,31 +52,6 @@ class Category(models.Model):
     def has_products(self):
         return self.product.exists()
 
-    
-class Subcategory(models.Model):
-    category = models.ForeignKey(
-        Category,
-        on_delete=models.CASCADE,
-        related_name='subcategory',
-        verbose_name=_("Categoría"),
-        help_text=_("Seleccione la categoría correspondiente.")
-    )   
-    name = models.CharField(
-        max_length=100,
-        verbose_name=_("Nombre de la subcategoría"),
-        help_text=_("Incluya el nombre de la subcategoría.")
-    )
-    slug = models.SlugField(
-        max_length=200,
-        unique=True
-    )
-    class Meta:
-        verbose_name = _('Subcategoría')
-        verbose_name_plural = _('Subcategorías')
-        ordering = ['name']
-    def __str__(self):
-        return  self.category.name + ' - ' + self.name
-     
 
 
 class Product(models.Model):
@@ -86,16 +61,6 @@ class Product(models.Model):
         related_name='product',
         verbose_name=_("Categoría"),
         help_text=_("Seleccione la categoría correspondiente.")
-    )
-
-    subcategory = models.ForeignKey(
-        Subcategory,
-        on_delete=models.CASCADE,
-        related_name='product',
-        verbose_name=_("Subcategoría"),
-        help_text=_("Seleccione la subcategoría correspondiente."),
-        null=True,
-        blank=True
     )
 
     name = models.CharField(
@@ -178,17 +143,6 @@ class Product(models.Model):
     
     def get_absolute_url(self):
         return reverse('shop:product_detail', args=[self.id, self.slug])
-
-    @property
-    def average_rating(self):
-        reviews = self.reviews.all()
-        if reviews.exists():
-            return reviews.aggregate(models.Avg('rating'))['rating__avg']
-        return None
-
-    @property
-    def review_count(self):
-        return self.reviews.count()
     
     def get_name_seller(self):
         return self.seller.get_full_name()
@@ -205,114 +159,6 @@ class Product(models.Model):
         if self.image:
             self.image.delete(save=False)
         super().delete(*args, **kwargs)
-
-class ProductReview(models.Model):
-    """
-    Modelo para almacenar valoraciones de productos.
-    """
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name='reviews',
-        verbose_name=_("Producto"),
-        help_text=_("El producto al que se refiere esta valoración.")
-    )
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        verbose_name=_("Usuario"),
-        help_text=_("Usuario que dejó la valoración.")
-    )
-    rating = models.DecimalField(
-        max_digits=2,
-        decimal_places=1,
-        validators=[MinValueValidator(1), MaxValueValidator(5)],
-        verbose_name=_("Calificación"),
-        help_text=_("Calificación del producto, entre 1 (mala) y 5 (excelente)."),
-        blank=True,
-        null=True,
-    )
-
-    image = models.ImageField(
-        upload_to='Reviews_images/',
-        verbose_name=_("Foto del producto"),
-        help_text=_("Imagen representativa del producto."),
-        blank = True,
-        null=True,
-    )
-
-    comment = models.TextField(
-        blank=True,
-        verbose_name=_("Comentario"),
-        help_text=_("Comentario adicional del usuario.")
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name=_("Fecha de creación"),
-        help_text=_("Fecha en que se creó la valoración.")
-    )
-
-    donot_review = models.BooleanField(
-        default=False,
-        null=True,
-        blank=True,
-    )
-
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = _("Valoración del producto")
-        verbose_name_plural = _("Valoraciones del producto")
-        indexes = [
-            models.Index(fields=['rating']),
-            models.Index(fields=['-created_at']),
-        ]
-
-    def __str__(self):
-        return f"Review by {self.user.email} for {self.product.name}"
-    
-    def clean(self):
-        """
-        - Evita múltiples valoraciones de un mismo usuario para un mismo producto.
-        - Impide que el vendedor valore su propio producto.
-        - Si donnot_review es True, no se permite calificación ni comentario.
-        """
-        if self.pk is None:  
-            if ProductReview.objects.filter(product=self.product, user=self.user).exists():
-                raise ValidationError(_("El usuario ya ha valorado este producto."))
-
-        if self.user == self.product.seller:
-            raise ValidationError(_("El usuario no puede valorar sus propios productos."))
-
-        if self.donot_review:
-            if self.rating is not None or self.comment:
-                raise ValidationError(_("Una reseña marcada como 'no valorar' no debe tener calificación ni comentario."))
-
-    def save(self, *args, **kwargs):
-        """
-        Guarda la valoración y actualiza el contador de valoraciones del producto.
-        """
-        self.clean()
-        super().save(*args, **kwargs)
-        Product.objects.filter(id=self.product.id).update(reviews_count=models.F('reviews_count') + 1)
-
-    def delete(self, *args, **kwargs):
-        """
-        Elimina la valoración, borra la imagen y ajusta el contador de valoraciones del producto.
-        """
-        if self.image:
-            self.image.delete(save=False)
-
-        super().delete(*args, **kwargs)
-
-        Product.objects.filter(id=self.product.id).update(
-            reviews_count=models.F('reviews_count') - 1
-        )
-
-    def get_image_url(self):
-        if self.image:
-            return self.image.url
-        else:
-            False
 
 class Cart(models.Model):
     user = models.OneToOneField(

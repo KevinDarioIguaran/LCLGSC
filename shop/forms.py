@@ -1,5 +1,5 @@
 from django import forms
-from.models import Category, Subcategory
+from.models import Category
 from django.core.validators import MinValueValidator
 
 PRODUCT_QUANTITY_CHOICES = [] # = [(1, "1"), (2, "2"), ..., (20, "20")]
@@ -53,31 +53,3 @@ class SubmitProductForm(forms.Form):
         required=True,
         widget=forms.ClearableFileInput(attrs={'class': 'form-control'}),
     )
-
-class ProductFilterForm(forms.Form):
-    price_min = forms.DecimalField(
-        required=False,
-        max_digits=10,
-        decimal_places=2,
-        widget=forms.NumberInput(attrs={'placeholder': 'Precio mínimo', 'class': 'price-input'})
-    )
-    
-    price_max = forms.DecimalField(
-        required=False,
-        max_digits=10,
-        decimal_places=2,
-        widget=forms.NumberInput(attrs={'placeholder': 'Precio máximo', 'class': 'price-input'})
-    )
-
-    subcategory = forms.ModelChoiceField(
-        queryset=Subcategory.objects.none(),
-        required=False,
-        widget=forms.Select(attrs={'class': 'filter-option'}),
-        label='Subcategoría',
-        empty_label='Todas'
-    )
-
-    def __init__(self, *args, category=None, **kwargs):
-        super().__init__(*args, **kwargs)
-        if category:
-            self.fields['subcategory'].queryset = Subcategory.objects.filter(category=category)

@@ -9,59 +9,29 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.db.models import Avg
 
-from .models import Category, Product, Cart, CartItem, Subcategory
-from .forms import SubmitProductForm, ProductFilterForm, CartAddProductForm, CartUpdateProductForm
+from .models import Category, Product, Cart, CartItem
+from .forms import SubmitProductForm, CartAddProductForm, CartUpdateProductForm
 from luis_carlos_cooperativa.utils.validators import validate_images
 
 
 def product_detail(request, id, slug, error=None):
-    quantity_range = None
     product = get_object_or_404(Product, id=id, slug=slug)
-    reviews = product.reviews.exclude(donot_review=True)
-    reviews_count = reviews.count()
 
-    if product.stock >= 20:
-        quantity_range = range(1, 21)
-
-    def calc_star_percentage(star):
-        if reviews_count == 0:
-            return 0
-        return round(reviews.filter(rating=star).count() * 100 / reviews_count)
-
-    star_percentages = {
-        '5_stars_percent': calc_star_percentage(5),
-        '4_stars_percent': calc_star_percentage(4),
-        '3_stars_percent': calc_star_percentage(3),
-        '2_stars_percent': calc_star_percentage(2),
-        '1_stars_percent': calc_star_percentage(1),
-    }
+    quantity_range = range(1, 21) if product.stock >= 20 else range(1, product.stock + 1) if product.stock > 0 else None
 
     related_products_qs = (
-        Product.objects.filter(category=product.category, available=True)
+        Product.objects.filter(category=product.category)
         .exclude(id=product.id)
-        .filter(stock__gt=0) 
-        .annotate(avg_rating=Avg("reviews__rating"))
-        .order_by("avg_rating", "sales") 
+        .order_by("-sales")
     )
 
-    related_products = []
-
-    if related_products_qs.exists():
-        if related_products_qs.count() > 20:
-            related_products = related_products_qs[:20]
-        else:
-            related_products = related_products_qs[:10] 
+    related_products = list(related_products_qs[:20]) if related_products_qs.count() > 10 else list(related_products_qs[:10])
 
     context = {
         'product': product,
         'product_id': product.id,
-        'reviews': reviews,
-        'reviews_10': reviews[:10],
-        'average_rating': product.average_rating,
-        'review_count': product.review_count,
         'seller_user': product.get_name_seller,
         'related_products': related_products,
-        'star_percentages': star_percentages,
     }
 
     if error:
@@ -94,43 +64,20 @@ def search_view(request):
 
     return render(request, 'pages/shop/search/search.html', context)
 
-def search_by_category_view(request, category=None, subcategory=None):
+def search_by_category_view(request, category=None,):
     if not category:
         return redirect("shop:search")
 
     category_obj = get_object_or_404(Category, slug=category)
-    products = Product.objects.filter(category=category_obj)
+    search_results = Product.objects.filter(category=category_obj)
 
-    if subcategory:
-        subcategory_obj = get_object_or_404(Subcategory, slug=subcategory, category=category_obj)
-        products = products.filter(subcategory=subcategory_obj)
-    else:
-        subcategory_obj = None
-
-
-    form_filter = ProductFilterForm(request.GET, category=category_obj)
-    if form_filter.is_valid():
-        price_min = form_filter.cleaned_data.get('price_min')
-        price_max = form_filter.cleaned_data.get('price_max')
-        subcategory_form = form_filter.cleaned_data.get('subcategory')
-
-        if price_min is not None:
-            products = products.filter(price__gte=price_min)
-        if price_max is not None:
-            products = products.filter(price__lte=price_max)
-        if subcategory_form:
-            products = products.filter(subcategory=subcategory_form)
 
     context = {
-        'form_filter': form_filter,
-        'products': products,
-        'by_category': True,
-        'category': category_obj,
-        'subcategories': category_obj.subcategory.all(),
-        'current_subcategory': subcategory_obj,
+        'search_results': search_results,
+        'categories': category_obj,
     }
 
-    if not products.exists():
+    if not search_results.exists():
         context['errors'] = 'No hay productos en esta categoría.'
 
     return render(request, 'pages/shop/search/search_by_category.html', context)
@@ -255,3 +202,4 @@ def cart_update(request, product_id):
         'success': False,
         'message': 'Formulario inválido.'
     }, status=400)
+

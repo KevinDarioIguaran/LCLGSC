@@ -50,7 +50,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     code = models.CharField(
         max_length=20,
         primary_key=True,
-        verbose_name="ID de usuario"
+        verbose_name="Codigo de usuario"
     )
     
     first_name = models.CharField(
