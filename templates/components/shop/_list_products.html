@@ -1,0 +1,27 @@
+{% load humanize %}
+{% load static %}
+
+<link rel="stylesheet" href="{% static 'styles/components/shop/_list_products.css' %}">
+
+<div class="products-list-container">
+    {% if title %}
+        <div class="products-list-title">
+            <p>{{ title }}</p>
+        </div>
+    {% endif %}
+    <div class="products-list">
+        {% for product in products %}
+            <div class="product-card">
+                <a href="{{ product.get_absolute_url }}" class="links_black">
+                    <img src="{{ product.get_image_url }}" alt="{{ product.name }}" class="product-card__img">
+                    <h3 class="product-card__seller-name">{{ product.seller.get_cooperative_name }}</h3>
+                    <hr>
+                    <h3 class="product-card__name">{{ product.name }}</h3>
+                    <p class="product-card__price">{{ product.price|floatformat:0|intcomma }} COP</p>
+                </a>
+            </div>
+        {% empty %}
+            <p class="products-list-empty">No hay productos disponibles.</p>
+        {% endfor %}
+    </div>
+</div>

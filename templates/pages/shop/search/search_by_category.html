@@ -1,41 +1,68 @@
 {% extends 'layouts/base.html' %}
-{% load humanize %}
 {% load static %}
+{% load humanize %}
 
-{% block title %}Resultados de búsqueda - Rurales Colombia{% endblock %}
-
-{% block extra_styles %}
-    <link rel="stylesheet" href="{% static 'styles/pages/home/home.css' %}">
-{% endblock %}
 
 {% block content %}
     {% include 'components/navbar/navbar.html' %}
-        {% if errors %}
-            <p class="search-results__error">{{ errors }}</p>
-        {% endif %}
+    <link rel="stylesheet" href="{% static 'styles/pages/shop/product/product_detail.css' %}">
 
-        {% if search_results %}
-            <div class="all-category">
-                <h2>Resultados</h2>
-                <div class="item">
-                    {% for product in search_results %}
-                        <div class="product">
-                            <a href="{{ product.get_absolute_url }}">
-                                <img src="{% if product.get_image_url %}{{ product.get_image_url }}{% else %}{% static 'img/no_image.png' %}{% endif %}" alt="{{ product.name }}">
-                            </a>
-                            <h3>{{ product.name }}</h3>
-                            <p>{{ product.price|floatformat:0|intcomma }} COP</p>
-                        </div>
-                    {% endfor %}
+    <div class="product-detail-container">
+        <div class="product-detail">
+            <div class="product-detail__seller-info">
+                <div class="product-detail__seller-details">
+                    <div class="product-detail__seller-photo-container">
+                        <img src="{{ product.seller.get_cooperative_logo_url}}" alt="Seller Profile Image" class="product-detail__seller-photo">
+                    </div>
+                    <p class="product-detail__seller-name">{{ product.seller.get_cooperative_name}}</p>
                 </div>
             </div>
-        {% else %}
-            <p>No hay productos disponibles en esta categoría.</p>
-        {% endif %}
+            <div class="product-detail__info">
+                <div class="product-detail__description">
+                    {{ product.description|linebreaks }}
+                </div>
+            </div>
+        </div>
+        <div class="product-detail__swipe-container">
+            <div class="product-detail__img-container">
+                <div class="product-detail__media">
+                    <img src="{{ product.get_image_url }}" alt="{{ product.name }} - Imagen">
+                </div>
+            </div>
+        </div>
+        <div class="cart">
+            <div class="cart__box">
+                <p class="cart__box-price">{{ product.price|floatformat:0|intcomma }} COP</p>
+                {% if product.stock > 0 %}
+                    <p class="product__available-message">Disponible {{ product.stock }}</p>
+                {% else %}
+                    <p class="product__available-message product__available-message--false">No disponible</p>
+                {% endif %}
+                {% if form %}
+                    <form action="{% url 'shop:cart_add' product.id %}" method="post" class="cart__actions">
+                        {% csrf_token %}
+                        <div class="cart__box cart__box-select_quantity">
+                            Cantidad:   
+                            <select name="quantity">
+                                {% for i in quantity_range %}
+                                    <option value="{{ i }}">{{ i }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        {% if error %}
+                            <p class="message-error">{{ error }}</p>
+                        {% endif %}
+                        <button type="submit" class="cart__button">Agregar al carrito</button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+        <div class="product-detail__related-products">
+            {% include 'components/shop/_list_products.html' with products=related_products title="Productos Relacionados" %}
+        </div>
+        {% include 'components/footer.html' %}
+    </div>
 
-    {% include 'components/footer.html' %}
-{% endblock %}
+    
 
-{% block extra_scripts %}
-    <script src="{% static 'js/search.js' %}" defer></script>
 {% endblock %}

@@ -2,7 +2,7 @@
 {% load humanize %}
 {% load static %}
 
-{% block title %}Resultados de búsqueda - Rurales Colombia{% endblock %}
+{% block title %}Resultados de búsqueda{% endblock %}
 
 {% block extra_styles %}
     <link rel="stylesheet" href="{% static 'styles/pages/home/home.css' %}">
@@ -21,6 +21,10 @@
                                     <a href="{{ product.get_absolute_url }}">
                                         <img src="{% if product.get_image_url %}{{ product.get_image_url }}{% else %}{% static 'img/no_image.png' %}{% endif %}" alt="{{ product.name }}">
                                     </a>
+                                    <h3><strong>{{ product.seller.get_cooperative_name }}</strong></h3>
+                                    <br>
+                                    <hr>
+                                    <br>
                                     <h3>{{ product.name }}</h3>
                                     <p>{{ product.price|floatformat:0|intcomma }} COP</p>
                                 </div>

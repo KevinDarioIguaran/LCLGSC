@@ -84,26 +84,17 @@
                 </div>
             </div>
         </div>
+        
+    </div>
+    <div class="orders">
+        {% if related_products %}
+            {% include 'components/shop/_list_products.html' with products=related_products title="Productos que podrían interesarte" %}
+        {% endif %}
     </div>
 
-    {% if related_products %}
-        <div class="products">
-            <div class="products__title">
-                <p>Productos que podrían interesarte</p>
-            </div>
-            <div class="products__list">
-                {% for product in related_products %}
-                    <div class="product-card">
-                        <a href="{{ product.get_absolute_url }}" class="links_black ">
-                            <img src="{{ product.get_image_url  }}" alt="{{ product.name }}" class="product-card__img">
-                            <h3 class="product-card__name">{{ product.name }}</h3>
-                            <p class="product-card__price">{{ product.price|floatformat:0|intcomma }} COP</p>
-                        </a>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    {% endif %}
+
+
+
 
     {% if request.user_agent.is_mobile %}
         {% include 'account/profile/mobile/utilities/menu-bottom.html' %}

@@ -58,18 +58,7 @@
             </div>
         </div>
         <div class="product-detail__related-products">
-            <h2 class="product-detail__related-products-title">Productos Relacionados</h2>
-            <div class="product-detail__products-list">
-                {% for related_product in related_products reversed %}
-                    <div class="product-detail__item">
-                        <a href="{% url 'shop:product_detail' id=related_product.id slug=related_product.slug %}" class="product-detail__item-link">
-                            <img src="{{ related_product.get_image_url }}" alt="{{ related_product.name }}" class="product-detail__item-img">
-                            <h4 class="product-detail__item-name">{{ related_product.name }}</h4>
-                            <p class="product-detail__item-price">{{ related_product.price|floatformat:0|intcomma  }} COP</p>
-                        </a>
-                    </div>
-                {% endfor %}
-            </div>
+            {% include 'components/shop/_list_products.html' with products=related_products title="Productos Relacionados" %}
         </div>
         {% include 'components/footer.html' %}
     </div>
