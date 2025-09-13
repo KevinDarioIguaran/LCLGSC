@@ -5,158 +5,118 @@
 {% block title %}Resumen del pedido{% endblock %}
 
 {% block extra_styles %}
-    <link rel="stylesheet" href="{% static 'styles/pages/orders/order.css' %}">
+<link rel="stylesheet" href="{% static 'styles/pages/orders/order.css' %}">
 {% endblock %}
 
 {% block content %}
-    {% include "components/navbar/navbar.html" %}
+{% include "components/navbar/navbar.html" %}
 
-    <div class="order-container">
-        <h2 class="order-title">Resumen del pedido</h2>
+<div class="order-container">
+    <h2 class="order-title">Resumen del pedido</h2>
 
-        <!-- Advertencia de stock -->
-        {% if out_of_stock_items %}
-            <div class="order-warning">
-                <p class="order-warning1-title order-warning-title">¡Atención!</p> Algunos productos no tienen suficiente stock:
-                <ul class="order-warning-list">
-                    {% for product in out_of_stock_items %}
-                        <li>{{ product.name }} — Disponible: {{ product.stock }}</li>
+    {% if items %}
+        <div class="order-table-wrapper">
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio unitario</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>{{ item.product.name }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ item.product.price|floatformat:0|intcomma }}</td>
+                            <td>${{ item.total|floatformat:0|intcomma }}</td>
+                        </tr>
                     {% endfor %}
-                </ul>
-                <a href="{% url 'shop:cart_detail' %}" class="order-back-btn">Volver al carrito</a>
-            </div>
-        {% endif %}
-
-        <!-- Tabla de productos -->
-        {% if items %}
-            <div class="order-table-wrapper">
-                <table class="order-table">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th>Cantidad</th>
-                            <th>Precio unitario</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in items %}
-                            <tr>
-                                <td>{{ item.product.name }}</td>
-                                <td>{{ item.quantity }}</td>
-                                <td>${{ item.product.price|floatformat:0|intcomma }}</td>
-                                <td>${{ item.total|floatformat:0|intcomma }}</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="3" class="order-total-label">Total:</td>
-                            <td class="order-total-amount">${{ total|floatformat:0|intcomma }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        {% endif %}
-
-        <!-- Datos financieros del usuario -->
-        <div class="order-user-financials">
-            <p>Crédito disponible: <strong>${{ credit|floatformat:0|intcomma }}</strong></p>
-            <p>Deuda actual: <strong>${{ debt|floatformat:0|intcomma }}</strong></p>
-
-            {% if has_enough_credit %}
-                <p>Crédito restante si realiza el pedido:
-                    <strong>${{ remaining_credit|floatformat:0|intcomma }}</strong>
-                </p>
-            {% else %}
-                <p class="order-warning2-title order-warning-title"><strong>No tiene crédito suficiente para este pedido.</strong></p>
-            {% endif %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" class="order-total-label">Total:</td>
+                        <td class="order-total-amount" id="order-total-amount" data-base="{{ total|floatformat:0 }}">
+                            ${{ total|floatformat:0|intcomma }}
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
+    {% endif %}
 
-        <!-- Dirección del usuario (input) -->
-        {% if can_continue %}
-            <form id="order-confirm-form" class="order-confirm-form">
-                {% csrf_token %}
-                <select name="school_address" id="school_address" required>
-                    <option value="">--- Seleccione ---</option>
-                    {% for value, label in school_address_choices %}
-                        <option value="{{ value }}">{{ label }}</option>
-                    {% endfor %}
-                </select>
-                <button type="submit" id="confirm-btn" class="order-confirm-btn">Confirmar pedido</button>
-            </form>
-            <div id="order-response" class="order-response"></div>
-        {% endif %}
+    <br>
 
-        <!-- Botón de pago físico -->
-        {% if show_physical_payment %}
-            <form method="post"
-                  action="{% url 'orders:order_create' %}"
-                  class="order-confirm-form">
-                {% csrf_token %}
-                <button type="submit" class="order-confirm-btn">Pagar en físico</button>
-            </form>
-        {% endif %}
+    <div class="order-user-financials">
+        <p>Crédito disponible: <strong id="credit-available">${{ credit|floatformat:0|intcomma }}</strong></p><br>
+        <p>Envío: <strong id="shipping-cost">$0</strong></p><br>
+        <p>Crédito restante si realiza el pedido: <strong id="remaining-credit">${{ credit|floatformat:0|intcomma }}</strong></p>
+        <p id="credit-warning" class="order-warning2-title order-warning-title">
+            <strong>No tiene crédito suficiente para este pedido.</strong>
+        </p>
     </div>
 
-    {% include "components/footer.html" %}
-{% endblock %}
+    <br>
 
-{% block extra_scripts %}
+    {% if can_continue %}
+        <form id="order-confirm-form" class="order-confirm-form" method="POST" action="{% url 'orders:order_create' %}">
+            {% csrf_token %}
+            <select name="school_address" id="school_address" required>
+                <option value="">--- Dirección ---</option>
+                {% for value, label in school_address_choices %}
+                    <option value="{{ value }}">{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" id="confirm-btn" class="order-confirm-btn" disabled>Confirmar pedido</button>
+        </form>
+        <div id="order-response" class="order-response"></div>
+    {% endif %}
+</div>
+
 <script>
-const form = document.getElementById('order-confirm-form');
-const responseBox = document.getElementById('order-response');
-const confirmBtn = document.getElementById('confirm-btn');
+document.addEventListener('DOMContentLoaded', function() {
+    const schoolSelect = document.getElementById('school_address');
+    const shippingCostElement = document.getElementById('shipping-cost');
+    const orderTotalElement = document.getElementById('order-total-amount');
+    const remainingCreditElement = document.getElementById('remaining-credit');
+    const creditAvailableElement = document.getElementById('credit-available');
+    const creditWarningElement = document.getElementById('credit-warning');
+    const confirmBtn = document.getElementById('confirm-btn');
 
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        for (let cookie of document.cookie.split(';')) {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+    const baseTotal = parseFloat(orderTotalElement.dataset.base) || 0;
+    const creditAvailable = parseFloat(
+        creditAvailableElement.textContent.replace(/[\s\$,]/g, '')
+    ) || 0;
+
+    function updateVisuals() {
+        const address = schoolSelect.value;
+        let shipping = 0;
+
+        if (address && address.toLowerCase() !== 'cooperative') {
+            shipping = 300; 
+        }
+
+        const visualTotal = baseTotal + shipping;
+        const remainingCredit = creditAvailable - visualTotal;
+
+        shippingCostElement.textContent = `$${shipping.toLocaleString()}`;
+        orderTotalElement.textContent = `$${visualTotal.toLocaleString()}`;
+        remainingCreditElement.textContent = `$${remainingCredit.toLocaleString()}`;
+
+        if (remainingCredit < 0) {
+            creditWarningElement.style.display = 'block';
+            confirmBtn.disabled = true;
+        } else {
+            creditWarningElement.style.display = 'none';
+            confirmBtn.disabled = !address;
         }
     }
-    return cookieValue;
-}
 
-form.addEventListener('submit', function (event) {
-    event.preventDefault();
-    confirmBtn.disabled = true;
-    confirmBtn.innerText = "Procesando...";
+    schoolSelect.addEventListener('change', updateVisuals);
 
-    const formData = new FormData(form);
-
-    fetch("{% url 'orders:order_create' %}", {
-        method: 'POST',
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'Accept': 'application/json',
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        confirmBtn.disabled = false;
-        confirmBtn.innerText = "Confirmar pedido";
-
-        if (data.success) {
-            responseBox.innerHTML = `<p class="success">✅ ${data.message}</p>`;
-            setTimeout(() => {
-                window.location.href = "{% url 'orders:order_list' %}";
-            }, 1000);
-        } else {
-            responseBox.innerHTML = `<p class="error">❌ ${data.error}</p>`;
-        }
-    })
-    .catch(err => {
-        confirmBtn.disabled = false;
-        confirmBtn.innerText = "Confirmar pedido";
-        responseBox.innerHTML = `<p class="error">⚠️ Error al procesar el pedido.</p>`;
-        console.error(err);
-    });
+    updateVisuals(); 
 });
 </script>
 {% endblock %}

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import MinLengthValidator, MinValueValidator, MaxValueValidator
@@ -84,12 +86,6 @@ class Product(models.Model):
         help_text=_("Detalles del producto, incluyendo ingredientes, uso, etc."),
         max_length=350,
     )
-    stock = models.IntegerField(
-        validators=[MinValueValidator(0)],
-        verbose_name=_("Stock"),
-        help_text=_("Cantidad disponible del producto."),
-        default=0
-    )
     sales = models.IntegerField(
         default=0,
         verbose_name=_("Ventas"),
@@ -107,11 +103,6 @@ class Product(models.Model):
         verbose_name=_("Vendedor"),
         help_text=_("Vendedor que ofrece este producto.")
     )
-    available = models.BooleanField(
-        verbose_name=_("Está disponible"),
-        default=True,
-        help_text=_("Si el producto está disponible para compra.")
-    )
     created = models.DateField(
         auto_now_add=True,
         verbose_name=_("Fecha de creación"),
@@ -127,6 +118,33 @@ class Product(models.Model):
         verbose_name=_("Imagen principal"),
         help_text=_("Imagen representativa del producto.")
     )
+    discount_percent = models.PositiveIntegerField(
+        default=0,
+        null=True,
+        validators=[MinValueValidator(0), MaxValueValidator(99)],
+        verbose_name=_("Descuento (%)"),
+        help_text=_("Porcentaje de descuento aplicado al producto.")
+    )
+    discount_price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        verbose_name=_("Precio con descuento"),
+        help_text=_("Si se deja vacío se calculará automáticamente."),
+        default=0,
+        validators=[MinValueValidator(0)],
+    )
+    offer_active = models.BooleanField(
+        default=False,
+        verbose_name=_("¿Oferta activa?")
+    )
+    available = models.BooleanField(
+        default=True,
+        verbose_name=_("¿Disponible?"),
+        help_text=_("Indica si el producto está disponible para la venta.")
+    )
+
 
     class Meta:
         ordering = ['name'] 
@@ -147,9 +165,6 @@ class Product(models.Model):
     def get_name_seller(self):
         return self.seller.get_full_name()
     
-    def is_available(self):
-        return self.available
-    
     def get_image_url(self):
         if self.image:
             return self.image.url
@@ -159,6 +174,15 @@ class Product(models.Model):
         if self.image:
             self.image.delete(save=False)
         super().delete(*args, **kwargs)
+
+    def get_final_price(self):
+        if self.offer_active:
+            if self.discount_price:
+                return self.discount_price
+            elif self.discount_percent > 0:
+                discount_percentage = Decimal(self.discount_percent) / Decimal(100)
+                return self.price - (self.price * discount_percentage)
+        return self.price
 
 class Cart(models.Model):
     user = models.OneToOneField(
@@ -186,19 +210,17 @@ class Cart(models.Model):
 
 
     def get_total(self):
-        total = self.cart_items.aggregate(
-            total=Sum(F("product__price") * F("quantity"))
-        )['total'] or 0
-        return total
-    
+        return sum(item.product.get_final_price() * item.quantity for item in self.cart_items.select_related("product"))
+
     def get_total_cost(self):
-        return sum(item.quantity * item.product.price for item in self.cart_items.select_related("product"))
+        return sum(item.product.get_final_price() * item.quantity for item in self.cart_items.select_related("product"))
+
 
     def get_cart_items_data(self):
         return [
             {
                 'product_id': item.product.id,
-                'price': float(item.product.price),
+                'price': float(item.product.get_final_price()),
                 'quantity': item.quantity
             }
             for item in self.cart_items.select_related("product")
@@ -228,12 +250,6 @@ class CartItem(models.Model):
 
         if self.quantity is None:
             raise ValidationError("La cantidad no puede ser None.")
-
-        if self.product.stock is None:
-            raise ValidationError("El stock del producto no está definido.")
-
-        if self.quantity > int(self.product.stock):
-            raise ValidationError("No hay suficiente stock disponible.")
 
 
 
@@ -303,3 +319,37 @@ class ShowBestOffers(models.Model):
         if self.image:
             self.image.delete(save=False)
         super().delete(*args, **kwargs)
+
+
+class RechargeLogs(models.Model):
+    seller = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='recharges',
+        verbose_name=_("Vendedor"),
+        help_text=_("Vendedor que realiza la recarga.")
+    )
+    code = models.CharField(
+        max_length=50,
+        verbose_name=_("Código de recarga"),
+        help_text=_("Código o referencia de la recarga.")
+    )
+    amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(1)],
+        verbose_name=_("Monto recargado"),
+        help_text=_("Monto de la recarga en la moneda local.")
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name=_("Fecha de recarga"),
+        help_text=_("Fecha en la que se realizó la recarga.")
+    )
+    class Meta:
+        verbose_name = _("Recarga de vendedor")
+        verbose_name_plural = _("Recargas de vendedores")
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.seller.get_full_name()} - {self.amount}"

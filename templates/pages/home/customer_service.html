@@ -1,0 +1,48 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Atención al Cliente{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{% static 'styles/pages/home/customer_service.css' %}">
+{% endblock %}
+
+{% block content %}
+    {% include 'components/navbar/navbar.html' %}
+
+    <main class="customer-service-container">
+        <header class="cs-header">
+            <h1 class="cs-title">Atención al Cliente</h1>
+            <p class="cs-description">
+                ¿Tienes dudas, sugerencias o necesitas ayuda? Nuestro equipo está listo para asistirte en todo lo que necesites.
+            </p>
+        </header>
+
+        <section class="cs-contact-info">
+            <h2 class="cs-section-title">Información de contacto</h2>
+            <div class="cs-contact-details">
+                <p><strong>Email:</strong> iguarankevin53@gmail.com</p>
+                <p><strong>Horario:</strong> Sábado a Domingo, 8:00am - 12:00pm</p>
+            </div>
+        </section>
+
+        <section class="cs-faq">
+            <h2 class="cs-section-title">Preguntas Frecuentes</h2>
+            <ul class="cs-faq-list">
+                <li class="cs-faq-item">
+                    <strong>¿Cómo hago un pedido?</strong> 
+                    <p>Selecciona los productos que deseas y sigue los pasos del proceso de compra en nuestra tienda en línea.</p>
+                </li>
+                <li class="cs-faq-item">
+                    <strong>¿Dónde puedo ver mis órdenes?</strong> 
+                    <p>Accede a tu perfil de usuario y dirígete a la sección "Ver órdenes" después "ver".</p>
+                </li>
+                <li class="cs-faq-item">
+                    <strong>¿Cómo solicito un reembolso?</strong> 
+                    <p>Dirígete a la cooperativa y solicita el reembolso.</p>
+                </li>
+            </ul>
+        </section>
+    </main>
+{% endblock %}

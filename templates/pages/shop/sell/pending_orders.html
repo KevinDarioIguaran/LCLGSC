@@ -1,0 +1,58 @@
+{% extends 'pages/shop/sell/sell-center.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Órdenes pendientes{% endblock %}
+
+{% block dashboard_content %}
+    <section class="products-list-section">
+        <div class="products-container">
+            <header class="products-header">
+                <h1 class="sell-heading">Órdenes pendientes</h1>
+            </header>
+
+            {% if orders %}
+                <table class="products-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Dirección</th>
+                            <th>Fecha</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.user.code }}</td>
+                                <td>{{ order.get_school_address_display }}</td>
+                                <td>{{ order.created|date:"d/m/Y H:i" }}</td>
+                                <td>${{ order.get_total_cost|floatformat:0|intcomma }} COP</td>
+                                <td>
+                                    {% if order.status == "pending" %}
+                                        <span class="status draft">Pendiente</span>
+                                    {% else %}
+                                        <span class="status available">{{ order.status|capfirst }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <ul class="actions-list-row2">
+                                        <li>
+                                            <a href="{% url 'shop:order_detail' order.id %}" class="btn-action edit">Ver</a>
+                                        </li>
+                                    </ul>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="no-products">No tienes órdenes pendientes aún.</p>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

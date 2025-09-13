@@ -71,11 +71,11 @@ class CustomUserAdmin(UserAdmin):
         (None, {'fields': ('code', 'password')}),
         ('Información personal', {
             'fields': (
-                'first_name', 'last_name', 'is_seller', 'cooperative_name', 'cooperative_logo'
+                'first_name', 'last_name', 'is_seller', 'cooperative_name'
             )
         }),
         ('Finanzas', {
-            'fields': ('credit', 'debt')
+            'fields': ('credit', )
         }),
         ('Código de verificación', {'fields': ('secret_code',)}),
         ('Permisos', {
@@ -91,7 +91,7 @@ class CustomUserAdmin(UserAdmin):
             'classes': ('wide',),
             'fields': (
                 'code', 'first_name', 'last_name', 'is_seller', 'cooperative_name',
-                'credit', 'debt', 'password1', 'password2', 'is_active', 'is_staff', 'is_superuser'
+                'credit', 'password1', 'password2', 'is_active', 'is_staff', 'is_superuser'
             )
         }),
     )

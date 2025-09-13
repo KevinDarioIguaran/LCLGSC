@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 from shop.models import Product
 from users.models import CustomUser
@@ -27,10 +29,10 @@ class Order(models.Model):
         max_length=20,
         choices=[
             ('pending', 'Pendiente'),
-            ('processing', 'En proceso'),
+            ('approved', 'Aprobado'),       
             ('completed', 'Completado'),
-            ('reimbursing', 'Reembolsando'),
             ('refunded', 'Reembolsado'),
+            ('cancelled', 'Stock agotado'),
         ],
         default='pending',
         verbose_name='Estado del pedido'
@@ -67,6 +69,7 @@ class Order(models.Model):
             ('coordination', 'Coordinación'),
             ('rectory', 'Rectoría'),
             ('staff_room', 'Sala de profesores'),
+            ('cooperative', 'Cooperativa')
         ],
         blank=True,
         null=True,
@@ -80,15 +83,29 @@ class Order(models.Model):
         help_text='ID del pedido'
     )
 
+    qr_code_data = models.CharField(max_length=255, null=True, blank=True)
+
+    seller_approved = models.ForeignKey(
+        CustomUser,
+        related_name='approved_orders',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        verbose_name='Aprobado por'
+    )
+
     class Meta:
         ordering = ['-created']
         indexes = [models.Index(fields=['-created'])]
 
     def __str__(self):
         return f'Order {self.id} - {self.user.code}'
-
+    
     def get_total_cost(self):
-        return sum(item.get_cost() for item in self.items.all())
+        total = sum(item.get_cost() for item in self.items.all())
+        if self.school_address != "cooperative":
+            total += 300
+        return total
     
     def clean_delete(self):
         if self.status in ['processing', 'reimbursing']:
@@ -107,6 +124,13 @@ class Order(models.Model):
     def clean(self):
         if self.donot_show:
             raise ValidationError("No se puede calificar ni comentar este pedido.")
+        if self.seller_approved and not getattr(self.seller_approved, 'is_seller', False):
+            raise ValidationError("El usuario que aprueba la orden debe ser vendedor.")
+
+    def save(self, *args, **kwargs):
+        if not self.qr_code_data:
+            self.qr_code_data = str(uuid.uuid4()) 
+        super().save(*args, **kwargs)
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name='items', on_delete=models.CASCADE)
@@ -125,5 +149,25 @@ class OrderItem(models.Model):
             self.price = self.product.price
         super().save(*args, **kwargs)
         
+    def get_total_cost(self):
+        return self.get_cost()
+
+class OrderCancelItem(models.Model):
+    order = models.ForeignKey(Order, related_name='cancel_items', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, related_name='order_cancel_items', on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True)
+    quantity = models.PositiveIntegerField(default=1)
+
+    def __str__(self):
+        return f'{self.product.name} x {self.quantity}'
+
+    def get_cost(self):
+        return self.price * self.quantity
+
+    def save(self, *args, **kwargs):
+        if not self.price:
+            self.price = self.product.price
+        super().save(*args, **kwargs)
+
     def get_total_cost(self):
         return self.get_cost()

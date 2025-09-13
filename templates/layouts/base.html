@@ -4,25 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title> Luis Carlos Galan Sarmiento Cooperativa - {% block title %} {% endblock%}</title>
-    <link rel="stylesheet" href="{% static 'styles/base/base.css' %}">
+    <title> Luis Carlos Galan Sarmiento Cooperativa - {% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'styles/base/reset.css' %}">
     <link rel="stylesheet" href="{% static 'styles/components/footer.css' %}">
     <link rel="stylesheet" href="{% static 'styles/base/variables.css' %}">
     <link rel="icon" type="image/x-icon" href="{% static 'assets/icons/favicon.ico' %}">
    
     {% block extra_styles %}{% endblock %}
-    
 </head>
 <body>
-  
     <div class="container">
         <div id="content">
             {% block content %}
             {% endblock %}
-
         </div>
     </div>
+
+    {% include "components/footer.html" %}
     <div id="modalOverlay" class="modal-overlay"></div>
 
     <script src="{% static 'js/base.js' %}"></script>

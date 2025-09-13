@@ -1,0 +1,38 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block content %}
+<h2>Escanear QR</h2>
+<div id="reader"></div>
+<p id="result"></p>
+
+<form id="qrForm" method="POST" action="{% url 'process_qr' %}">
+  {% csrf_token %}
+  <input type="hidden" name="qr_data" id="qr_data">
+  <button type="submit">Enviar QR</button>
+</form>
+
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="https://unpkg.com/html5-qrcode/minified/html5-qrcode.min.js"></script>
+<script>
+  function onScanSuccess(decodedText, decodedResult) {
+      document.getElementById("result").innerText = `QR detectado: ${decodedText}`;
+      document.getElementById("qr_data").value = decodedText;
+  }
+
+  const html5QrCode = new Html5Qrcode("reader");
+  const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+  Html5Qrcode.getCameras().then(devices => {
+      if (devices && devices.length) {
+          html5QrCode.start(
+              { facingMode: "environment" }, 
+              config,
+              onScanSuccess
+          );
+      }
+  }).catch(err => console.error(err));
+</script>
+{% endblock %}

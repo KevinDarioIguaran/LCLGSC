@@ -6,102 +6,164 @@
 
 <link rel="stylesheet" href="{% static 'styles/components/navbar/navbar.css' %}">
 
-<!-- Top Mobile Bar -->
-<div class="navbar__top-mobile">
-    <div class="navbar__logo">
-        <a href="{% url 'home:home' %}">
-            <img src="{% static 'assets/icons/favicon.ico' %}" alt="Logo" class="navbar__logo-img">
-        </a>
-    </div>
-    <div>
-        <p class="name-institution">
-            Café web escolar L.C.G.S
-        </p>
-    </div>
+<header class="site-header">
+    <nav class="navbar">
+        <div class="navbar__container">
 
-    <div  class="navbar__cart-mobile-link">
-        <a href="{% url 'shop:cart_detail' %}" class="navbar__cart-icon">
-            <img src="{% static 'assets/icons/cart.svg' %}" alt="Carrito" class="navbar__menu-icon">
-            <span class="cart-count">
-                {% if cart.total_items > 9 %} 9+
-                {% elif cart.total_items %} {{ cart.total_items }}
-                {% else %} 0
-                {% endif %}
-            </span>
-        </a>
-        {% if request.user.is_authenticated %}
-            <li class="navbar__menu-item" id="user">
-                <a href="{% url 'users:show_account' %}" class="navbar__menu-link">
-                    <img src="{% static 'assets/icons/user.svg' %}" alt="'User Icon' " class="navbar__menu-icon">
+            <div class="navbar__left">
+                <a href="{% url 'home:home' %}" class="navbar__logo">
+                    <img src="{% static 'assets/icons/favicon.ico' %}" alt="Logo" class="navbar__logo-img">
+                    <span class="navbar__brand-name">Café Web L.C.G.S</span>
                 </a>
-            </li>
-        {% else %}
-            <li class="navbar__menu-item navbar__menu-item--mobile" id="user">
-                <a href="{% url 'users:login' %}" class="navbar__menu-link">
-                    <img src="{% static 'assets/icons/user.svg' %}" alt="User Icon" class="navbar__menu-icon">
-                </a>
-            </li>
-        {% endif %}
-    </div>
+            </div>
 
+            <div class="navbar__center">
+                <form class="search-form" action="{% url 'shop:search' %}" method="GET">
+                    <input type="text" name="name_product" placeholder="Buscar productos..." aria-label="Buscar productos" class="search-form__input">
+                    <button type="submit" class="search-form__button" aria-label="Buscar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </button>
+                </form>
+            </div>
 
-</div>
-
-
-<!-- Main Navbar -->
-<nav class="navbar" id="navbar">
-    <!-- Logo -->
-    <div class="navbar__logo" id="navbar__logo">
-        <a href="{% url 'home:home' %}">
-            <img src="{% static 'assets/icons/favicon.ico' %}" alt="Logo" class="navbar__logo-img">
-        </a>
-    </div>
-
-
-    <!-- Search -->
-    <form class="navbar__search" action="{% url 'shop:search' %}" method="GET">
-        <input type="text" name="name_product" placeholder="Buscar productos..." aria-label="Buscar productos" class="navbar__search-input">
-        <button type="submit" class="navbar__search-button">
-            <img src="{% static 'assets/icons/search.svg' %}" alt="Buscar" class="navbar__search-icon">
-        </button>
-    </form>
-
-    <!-- Menu -->
-    <ul class="navbar__menu-list" id="navbar__menu-list">
-        <!-- User -->
-        <li class="navbar__menu-item">
-            {% if request.user.is_authenticated %}
-                <li class="navbar__menu-item" id="user">
-                    <a href="{% url 'users:show_account' %}" class="navbar__menu-link">
-                        <img src="{% static 'assets/icons/user.svg' %}" alt="'User Icon' " class="navbar__menu-icon">
+            <div class="navbar__right">
+                {% if request.user.is_authenticated %}
+                    <a href="{% url 'users:show_account' %}" class="navbar__action-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <div class="navbar__action-text">
+                            <span>Hola, {{ request.user.first_name|default:"Usuario" }}</span>
+                            <strong>Mi Cuenta</strong>
+                        </div>
                     </a>
-                </li>
-            {% else %}
-                <a href="{% url 'users:login' %}" class="navbar__menu-link">
-                    <div class="user_icon-container">
-                        <img src="{% static 'assets/icons/user.svg' %}" alt="User" class="navbar__menu-icon">    
+                {% else %}
+                    <a href="{% url 'users:login' %}" class="navbar__action-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <div class="navbar__action-text">
+                            <span>Hola, anónimo</span>
+                            <strong>Inicia Sesión</strong>
+                        </div>
+                    </a>
+                {% endif %}
+
+                <a href="{% url 'shop:cart_detail' %}" class="navbar__action-link navbar__cart-link">
+                    <div class="navbar__cart-icon-wrapper">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                        <span class="cart-badge">
+                            {% if cart.total_items > 9 %}9+{% else %}{{ cart.total_items|default:0 }}{% endif %}
+                        </span>
                     </div>
-                    <span>Hola, anónimo</span>
+                    <span class="navbar__action-text">Carrito</span>
                 </a>
-            {% endif %}
-        </li>
+            </div>
+        </div>
+    </nav>
 
-        <!-- Cart (solo visible en desktop) -->
-        <li class="navbar__menu-item navbar__cart-desktop">
-            <a href="{% url 'shop:cart_detail' %}" class="navbar__menu-link">
-                <div class="navbar__cart-icon">
-                    <img src="{% static 'assets/icons/cart.svg' %}" alt="Carrito" class="navbar__menu-icon">
-                    <span class="cart-count">
-                        {% if cart.total_items > 9 %} 9+
-                        {% elif cart.total_items %} {{ cart.total_items }}
-                        {% else %} 0
-                        {% endif %}
-                    </span>
+    <nav class="navbar-secondary">
+        <div class="navbar__container">
+            <ul class="navbar-secondary__list">
+                <li class="navbar-secondary__item">
+                    <button class="navbar-secondary__link js-sidebar-toggle">
+                        <img src="{% static 'assets/icons/menu.svg' %}" alt="menu">
+                        <span>Todo</span>
+                    </button>
+                </li>
+            </ul>
+            <ul class="navbar-secondary__list navbar-secondary__list--desktop-links">
+                <li class="navbar-secondary__item"><a href="{% url 'home:offers' %}" class="navbar-secondary__link">Ofertas</a></li>
+                <li class="navbar-secondary__item"><a href="{% url 'home:best_sellers' %}" class="navbar-secondary__link">Lo más Vendido</a></li>
+                {% if request.user.is_seller %}
+                <li class="navbar-secondary__item"><a href="{% url 'shop:sell' %}" class="navbar-secondary__link">Vender</a></li>
+                {% endif %}
+                <li class="navbar-secondary__item"><a href="{% url 'home:customer_service' %}" class="navbar-secondary__link">Servicio al Cliente</a></li>
+            </ul>
+        </div>
+    </nav>
+</header>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar__header">
+        {% if request.user.is_authenticated %}
+            <div class="sidebar__user">
+                {% if request.user.photo %}
+                    <img src="{{ request.user.photo.url }}" alt="Foto de perfil" class="sidebar__user-photo">
+                {% else %}
+                    <div class="sidebar__user-avatar">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    </div>
+                {% endif %}
+                <span class="sidebar__user-greeting">Hola, {{ request.user.first_name|default:"Usuario" }}</span>
+            </div>
+        {% else %}
+            <div class="sidebar__user">
+                <div class="sidebar__user-avatar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                 </div>
-            </a>
-        </li>
-    </ul>
-</nav>
+                <a href="{% url 'users:login' %}" class="sidebar__login-link">Hola, Inicia sesión</a>
+            </div>
+        {% endif %}
+        <button class="sidebar__close js-sidebar-close" aria-label="Cerrar menú">&times;</button>
+    </div>
 
-<!-- Sidebar -->
-{% include 'components/navbar/sidebar/sidebar.html' %}
+    <div class="sidebar__content">
+        <div class="sidebar__section sidebar__section--links">
+            <ul class="sidebar__link-list">
+                <li><a href="{% url 'home:offers' %}" class="sidebar__link">Ofertas</a></li>
+                <li><a href="{% url 'home:best_sellers' %}" class="sidebar__link">Lo más Vendido</a></li>
+                {% if request.user.is_seller %}
+                <li><a href="{% url 'shop:sell' %}" class="sidebar__link">Vender</a></li>
+                {% endif %}
+                <li><a href="{% url 'home:customer_service' %}" class="sidebar__link">Servicio al Cliente</a></li>
+            </ul>
+        </div>
+        
+        <hr class="sidebar__divider">
+
+        <div class="sidebar__section">
+            <h3 class="sidebar__title">Explora Categorías</h3>
+            <ul class="sidebar__category-list">
+                {% for category in categories %}
+                    <li>
+                        <a href="{% url 'shop:search_by_category' category.slug %}" class="sidebar__category-link">
+                            <span>{{ category.name }}</span>
+                            <span>&gt;</span>
+                        </a>
+                    </li>
+                {% empty %}
+                    <li><span class="sidebar__no-categories">No hay categorías.</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</aside>
+
+<div class="overlay" id="overlay"></div>
+
+
+<script>
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('overlay');
+    const toggleButtons = document.querySelectorAll('.js-sidebar-toggle');
+    const closeButton = document.querySelector('.js-sidebar-close');
+
+    function openSidebar() {
+        sidebar.classList.add('is-open');
+        overlay.classList.add('is-active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeSidebar() {
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-active');
+        document.body.style.overflow = '';
+    }
+
+    toggleButtons.forEach(button => button.addEventListener('click', openSidebar));
+    closeButton.addEventListener('click', closeSidebar);
+    overlay.addEventListener('click', closeSidebar);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === "Escape" && sidebar.classList.contains('is-open')) {
+            closeSidebar();
+        }
+    });
+</script>

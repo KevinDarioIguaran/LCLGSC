@@ -1,0 +1,31 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block title %}Panel del Vendedor{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'styles/pages/shop/sell/sell.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include 'components/navbar/navbar.html' %}
+
+<div class="seller-dashboard">
+    <aside class="sidebar-sell">
+        <nav class="menu">
+            <a href="{% url 'shop:seller_recharge_credit' %}" class="{% if request.resolver_match.url_name == 'seller_recharge_credit' %}active{% endif %}">Recargar</a>
+            <a href="{% url 'shop:pending_orders' %}" class="{% if request.resolver_match.url_name == 'pending_orders' %}active{% endif %}">Ordenes pendientes</a>
+            <a href="{% url 'shop:sell' %}" class="{% if request.resolver_match.url_name == 'sell' %}active{% endif %}">Vender producto</a>
+            <a href="{% url 'shop:list_my_products' %}" class="{% if request.resolver_match.url_name == 'list_my_products' %}active{% endif %}">Editar productos</a>
+        </nav>
+    </aside>
+
+    <main class="dashboard-content">
+        {% block dashboard_content %}
+        {% endblock %}
+    </main>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+    <script src="{% static 'js/shop/sell/sell.js' %}"></script>
+{% endblock %}

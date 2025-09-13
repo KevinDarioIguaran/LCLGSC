@@ -1,40 +1,23 @@
-import os
-from datetime import timedelta
-import time
-
-from django.conf import settings
-from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth import get_user_model, login, logout, update_session_auth_hash, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils._os import safe_join
-from django.utils.timezone import now
 from django.views.decorators.http import require_POST
-from django.contrib.auth import update_session_auth_hash
-from django.views.decorators.csrf import csrf_protect
-from django.contrib.admin.models import LogEntry
-from django.contrib.auth import authenticate
-
-import logging
-logger = logging.getLogger(__name__)
 
 from users.models import CustomUser
-
-
+from users.decorators import no_session_required
 
 User = get_user_model()
-
 
 @login_required
 def show_account_view(request):
     return render(request, "account/profile/show_account.html")
 
-
-
+@no_session_required
 def login_view(request):
     if request.user.is_authenticated:
         return redirect('users:show_account')
@@ -43,26 +26,24 @@ def login_view(request):
     if request.method == "POST":
         user_input = request.POST.get("identifier")
         password = request.POST.get("password")
-
         user = None
 
-        if user_input and user_input:
+        if user_input:
             try:
-                user = CustomUser.objects.get(code=(user_input))
+                user = CustomUser.objects.get(code=user_input)
             except CustomUser.DoesNotExist:
                 errors["identifier"] = "Usuario no encontrado o contraseña incorrecta."
         else:
             errors["identifier"] = "Debes ingresar tu código de usuario."
 
-        if user:
-            if user.check_password(password):
-                login(request, user)
-                return redirect("users:show_account")
-            else:
-                errors["password"] = "Usuario no encontrado o contraseña incorrecta."
+        if user and user.check_password(password):
+            login(request, user)
+            return redirect("users:show_account")
+        elif user:
+            errors["password"] = "Usuario no encontrado o contraseña incorrecta."
     return render(request, "account/signin.html", {"errors": errors})
 
-
+@no_session_required
 def signup_view(request):
     errors = {}
     if request.method == "POST":
@@ -70,35 +51,23 @@ def signup_view(request):
         first_name = request.POST.get("first_name", "").strip()
         last_name = request.POST.get("last_name", "").strip()
         secret_code = request.POST.get("secret_code", "").strip()
-        print(f"Identifier: {identifier}, First Name: {first_name}, Last Name: {last_name}, Secret Code: {secret_code}")
 
         user = None
         valid = False
 
         try:
             if not (identifier and first_name and last_name and secret_code):
-                print("Missing required fields")
                 raise ValueError()
-
             user = CustomUser.objects.get(code=identifier)
-
             if user.first_name.lower() != first_name.lower():
-                print("First name does not match")
                 raise ValueError()
-
             if user.last_name.lower() != last_name.lower():
-                print("Last name does not match")
                 raise ValueError()
-
             if user.secret_code != secret_code:
-                print("Secret code does not match")
                 raise ValueError()
-
             valid = True
-
         except (CustomUser.DoesNotExist, ValueError):
             pass
-
 
         if user and valid:
             request.session['set_password_user_code'] = user.code
@@ -108,8 +77,7 @@ def signup_view(request):
 
     return render(request, "account/signup.html", {"errors": errors})
 
-
-
+@no_session_required
 def set_password(request):
     errors = {}
     user_code = request.session.get('set_password_user_code')
@@ -141,19 +109,12 @@ def set_password(request):
                 user.set_password(password1)
                 user.save()
                 request.session.pop('set_password_user_code', None)
-
-                try:
-                    # loguear
-                    login(request, user)
-                    return redirect("users:show_account") 
-                except Exception:
-                    return redirect("users:show_account")
-
+                login(request, user)
+                return redirect("users:show_account")
             except ValidationError as e:
                 errors["password"] = e.messages
 
     return render(request, "account/set_password.html", {"errors": errors})
-
 
 @login_required
 @require_POST
@@ -185,8 +146,6 @@ def change_password_view(request):
 
     return JsonResponse({'success': False, 'errors': errors})
 
-
-
 @login_required
 @require_POST
 def delete_account_view(request):
@@ -199,7 +158,6 @@ def delete_account_view(request):
     try:
         logout(request)
         user.delete()
-
     except Exception:
         return JsonResponse({"success": False, "error": "Error interno al eliminar cuenta."}, status=500)
 
@@ -207,8 +165,10 @@ def delete_account_view(request):
 
 @login_required
 def logout_view(request):
-    """
-    Cierra la sesión del usuario y lo redirige a la página de inicio.
-    """
     logout(request)
     return redirect(reverse("home:home"))
+
+
+@no_session_required
+def password_reset_view(request):
+    return render(request, "account/password_reset.html")

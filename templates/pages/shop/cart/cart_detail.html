@@ -29,35 +29,50 @@
                         <ul>
                             <div>
                                 {% for item in items %}
-                                    <li class="product">
-                                        <a href="{{ item.product.get_absolute_url }}">
-                                            <img src="{{ item.product.get_image_url }}" alt="{{ item.product.name }}" class="product__img">
-                                        </a>
-                                        <div>
+                                    {% if item.product.available %}
+                                        <li class="product">
+                                            <a href="{{ item.product.get_absolute_url }}">
+                                                <img src="{{ item.product.get_image_url }}" alt="{{ item.product.name }}" class="product__img">
+                                            </a>
+                                            <div>
+                                                <div>
+                                                    <strong>{{ item.product.name }} - {{ item.product.get_name_seller }}</strong><br>
+                                                    <small>{{ item.quantity }}x – {{ item.product.price|floatformat:0|intcomma }} COP</small><br>
+                                                </div>
+
+                                                <div>
+                                                    {% with form=update_amount_items|get_item_update:item.product.id %}
+                                                        <form action="{% url 'shop:cart_update' item.product.id %}" method="post" class="update-form">
+                                                            {% csrf_token %}
+                                                            <div class="input-wrapper">
+                                                            {{ form.update }} 
+                                                            </div>
+                                                            <button type="submit" class="btn-continue">Actualizar</button>
+                                                        </form>
+                                                    {% endwith %}
+                                                </div>
+                                            </div>
+
+                                            <form action="{% url 'shop:cart_remove' item.product.id %}" method="post" class="profile__orders-link">
+                                                {% csrf_token %}
+                                                <button type="submit">Eliminar</button>
+                                            </form>
+                                        </li>
+                                    {% else %}
+                                        <li class="product unavailable">
+                                             <a href="">
+                                                <img src="{{ item.product.get_image_url }}" alt="{{ item.product.name }}" class="product__img">
+                                            </a>
                                             <div>
                                                 <strong>{{ item.product.name }}</strong><br>
-                                                <small>{{ item.quantity }}x – {{ item.product.price|floatformat:0|intcomma }} COP</small><br>
-                                                <small style="color: gray;">Disponibles: {{ item.product.stock }}</small>
+                                                <p class="text-unavailable">Este producto ya no está disponible.</p><br>
                                             </div>
-
-                                            <div>
-                                                {% with form=update_amount_items|get_item_update:item.product.id %}
-                                                    <form action="{% url 'shop:cart_update' item.product.id %}" method="post" class="update-form">
-                                                        {% csrf_token %}
-                                                        <div class="input-wrapper">
-                                                           {{ form.update }} 
-                                                        </div>
-                                                        <button type="submit" class="btn-continue">Actualizar</button>
-                                                    </form>
-                                                {% endwith %}
-                                            </div>
-                                        </div>
-
-                                        <form action="{% url 'shop:cart_remove' item.product.id %}" method="post" class="profile__orders-link">
-                                            {% csrf_token %}
-                                            <button type="submit">Eliminar</button>
-                                        </form>
-                                    </li>
+                                            <form action="{% url 'shop:cart_remove' item.product.id %}" method="post" class="profile__orders-link">
+                                                {% csrf_token %}
+                                                <button type="submit">Eliminar</button>
+                                            </form>
+                                        </li>
+                                    {% endif %}
                                 {% endfor %}                                
                             </div>
                         </ul>
@@ -78,9 +93,13 @@
                         <p>Total de productos: <strong>{{ cart.total_items }}</strong></p>
                         <p>Total a pagar: <strong>{{ cart.get_total|floatformat:0|intcomma }} COP</strong></p>
                     </div>
-                    <a href="{% url 'orders:order_continue' %}">
-                        <button class="btn-continue">Continuar con el pedido</button>
-                    </a>
+                    {% if not has_unavailable %}
+                        <a href="{% url 'orders:order_continue' %}">
+                            <button class="btn-continue">Continuar con el pedido</button>
+                        </a>
+                    {% else %}
+                        <p class="text-unavailable">Elimina los productos no disponibles para continuar.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -91,16 +110,6 @@
             {% include 'components/shop/_list_products.html' with products=related_products title="Productos que podrían interesarte" %}
         {% endif %}
     </div>
-
-
-
-
-
-    {% if request.user_agent.is_mobile %}
-        {% include 'account/profile/mobile/utilities/menu-bottom.html' %}
-    {% else %}
-        {% include 'components/footer.html' %}
-    {% endif %}
 
 {% endblock %}
 

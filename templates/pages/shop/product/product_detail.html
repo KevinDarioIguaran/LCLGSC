@@ -2,47 +2,46 @@
 {% load static %}
 {% load humanize %}
 
-
 {% block content %}
     {% include 'components/navbar/navbar.html' %}
     <link rel="stylesheet" href="{% static 'styles/pages/shop/product/product_detail.css' %}">
 
-    <div class="product-detail-container">
-        <div class="product-detail">
-            <div class="product-detail__seller-info">
-                <div class="product-detail__seller-details">
-                    <div class="product-detail__seller-photo-container">
-                        <img src="{{ product.seller.get_cooperative_logo_url}}" alt="Seller Profile Image" class="product-detail__seller-photo">
+    <div class="product-page">
+        <div class="product-info">
+            {% if product.description %}
+                <div class="product-info__description-box">
+                    <div class="product-info__description">
+                        {{ product.description|linebreaks }}
                     </div>
-                    <p class="product-detail__seller-name">{{ product.seller.get_cooperative_name}}</p>
                 </div>
-            </div>
-            <div class="product-detail__info">
-                <div class="product-detail__description">
-                    {{ product.description|linebreaks }}
-                </div>
-            </div>
+            {% endif %}
         </div>
-        <div class="product-detail__swipe-container">
-            <div class="product-detail__img-container">
-                <div class="product-detail__media">
-                    <img src="{{ product.get_image_url }}" alt="{{ product.name }} - Imagen">
-                </div>
-            </div>
-        </div>
-        <div class="cart">
-            <div class="cart__box">
-                <p class="cart__box-price">{{ product.price|floatformat:0|intcomma }} COP</p>
-                {% if product.stock > 0 %}
-                    <p class="product__available-message">Disponible {{ product.stock }}</p>
-                {% else %}
-                    <p class="product__available-message product__available-message--false">No disponible</p>
+        <div class="product-gallery">
+            <div class="product-image">
+                <img src="{{ product.get_image_url }}" alt="{{ product.name }} - Imagen">
+                {% if product.offer_active and product.discount_percent > 0 %}
+                    <span class="product-discount-badge">-{{ product.discount_percent }}%</span>
                 {% endif %}
+            </div>
+        </div>
+        <div class="cart-section">
+            <div class="cart-box">
+                <p class="seller-info__name">{{ product.seller.get_cooperative_name }}</p>
+                <br>
+                {% if product.offer_active and product.get_final_price != product.price %}
+                    <div class="price-info">
+                        <p class="price-info__original">{{ product.price|floatformat:0|intcomma }} COP</p>
+                        <p class="price-info__final">{{ product.get_final_price|floatformat:0|intcomma }} COP</p>
+                    </div>
+                {% else %}
+                    <p class="price-info__normal">{{ product.price|floatformat:0|intcomma }} COP</p>
+                {% endif %}
+                
                 {% if form %}
-                    <form action="{% url 'shop:cart_add' product.id %}" method="post" class="cart__actions">
+                    <form action="{% url 'shop:cart_add' product.id %}" method="post" class="cart-actions">
                         {% csrf_token %}
-                        <div class="cart__box cart__box-select_quantity">
-                            Cantidad:   
+                        <div class="cart-box cart-box--quantity-select">
+                            Cantidad: 
                             <select name="quantity">
                                 {% for i in quantity_range %}
                                     <option value="{{ i }}">{{ i }}</option>
@@ -52,17 +51,14 @@
                         {% if error %}
                             <p class="message-error">{{ error }}</p>
                         {% endif %}
-                        <button type="submit" class="cart__button">Agregar al carrito</button>
+                        <button type="submit" class="add-to-cart-button">Agregar al carrito</button>
                     </form>
                 {% endif %}
             </div>
         </div>
-        <div class="product-detail__related-products">
+        <div class="related-products-section">
             {% include 'components/shop/_list_products.html' with products=related_products title="Productos Relacionados" %}
         </div>
-        {% include 'components/footer.html' %}
     </div>
-
-    
-
 {% endblock %}
+

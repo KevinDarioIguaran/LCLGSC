@@ -3,11 +3,11 @@
 
 <div class="footer">
     <div class="footer__navigation">
-        <a href="{% url 'users:show_account' %}" class="footer__link">
+        <a href="{% url 'home:home' %}" class="footer__link">
            <img src="{% static 'assets/icons/home.svg' %}" alt="">
             Inicio
         </a>
-        <a href="" class="footer__link">
+        <a href="{% url 'home:about' %}" class="footer__link">
             <img src="{% static 'assets/icons/info.svg' %}" alt="">
             Acerca de 11.02
         </a>

@@ -1,0 +1,27 @@
+{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %}QR de la orden {{ order.id }}{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{% static 'styles/pages/orders/order.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include "components/navbar/navbar.html" %}
+
+<div class="order-container">
+    <div>
+        <a href="{% url 'orders:order_list' %}" class="order-back-btn">
+            <img src="{% static 'assets/icons/arrow_back.svg' %}" alt="">
+            <p>Regresar a Órdenes</p>
+        </a>
+    </div>
+    <h1 class="order-title">QR de la Orden #{{ order.id }}</h1>
+    <div class="qr-code-container">
+        <div class="qr-code">
+            <img src="data:image/png;base64,{{ qr_code }}" alt="QR Orden {{ order.id }}">
+        </div>
+    </div>
+</div>
+{% endblock %}

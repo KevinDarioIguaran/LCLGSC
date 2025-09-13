@@ -1,4 +1,7 @@
 import re
+import json
+
+
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponseBadRequest, JsonResponse, Http404
@@ -8,20 +11,21 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth import logout
 from django.db import transaction
 from django.db.models import F, Sum
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.urls import reverse
 
 from .models import Order
 from shop.models import Cart, Product, Category
 from .forms import SearchOrderForm
 from .tasks import create_order
-from luis_carlos_cooperativa.is_mobile import get_profile_template
+from .generate_qr import order_qr
 
+from shop.decorators import seller_required
+from .models import Order, OrderItem, OrderCancelItem
 
 @login_required
 def continue_order_view(request):
-    """
-    Muestra el resumen del pedido, el crédito del usuario
-    y permite ingresar la dirección dentro del colegio.
-    """
     try:
         cart = Cart.objects.get(user=request.user)
     except Cart.DoesNotExist:
@@ -31,48 +35,37 @@ def continue_order_view(request):
     if not items.exists():
         return redirect('shop:cart_detail')
 
-    total = Decimal('0')
-    out_of_stock_items = []
+    unavailable_items = [item for item in items if not item.product.available]
+    if unavailable_items:
+        return redirect('shop:cart_detail')
 
+    total = Decimal('0')
     for item in items:
         item.total = item.quantity * item.product.price
-        if item.quantity > item.product.stock:
-            out_of_stock_items.append(item.product)
-        else:
-            total += item.total
+        total += item.total
 
     credit = request.user.credit
-    debt = request.user.debt
     has_enough_credit = credit >= total
     remaining_credit = credit - total if has_enough_credit else 0
-    show_physical_payment = debt > 0 or not has_enough_credit
 
-    full_name = getattr(request.user, 'get_full_name', lambda: '')()  
+    full_name = getattr(request.user, 'get_full_name', lambda: '')()
 
     context = {
         'items': items,
         'total': total,
         'credit': credit,
-        'debt': debt,
         'has_enough_credit': has_enough_credit,
         'remaining_credit': remaining_credit,
-        'can_continue': has_enough_credit and not out_of_stock_items,
-        'out_of_stock_items': out_of_stock_items,
-        'show_physical_payment': show_physical_payment,
+        'can_continue': has_enough_credit,
         'full_name': full_name,
         'school_address_choices':  Order._meta.get_field('school_address').choices
     }
 
     return render(request, "pages/orders/continue_order.html", context)
 
-
-
 @login_required
 @require_POST
 def order_create_view(request):
-    """
-    Crea un pedido a partir del carrito y registra la dirección dentro del colegio.
-    """
     user = request.user
     cart = get_object_or_404(Cart, user=user)
 
@@ -93,10 +86,6 @@ def order_create_view(request):
     products = []
     for item in cart.cart_items.select_related('product'):
         product = item.product
-        if item.quantity > product.stock:
-            return JsonResponse({
-                "error": f"Stock insuficiente para {product.name}."
-            }, status=400)
 
         products.append({
             "product_id": product.id,
@@ -109,13 +98,6 @@ def order_create_view(request):
             user.credit -= total
             user.save()
 
-            for item in cart.cart_items.select_related("product"):
-                product = item.product
-                if item.quantity > product.stock:
-                    raise ValueError(f"Stock insuficiente para {product.name}.")
-                product.stock -= item.quantity
-                product.save()
-
             cart.cart_items.all().delete()
 
             create_order(
@@ -125,17 +107,14 @@ def order_create_view(request):
                 school_address=school_address
             )
 
-        return JsonResponse({"success": "Pago procesado y orden creada."})
+        return redirect("orders:order_list")
     except Exception as e:
-        return JsonResponse({"error": f"Error interno: {str(e)}"}, status=500)
+        return HttpResponseBadRequest(f"Error al crear el pedido: {str(e)}")
 
 
 @login_required
 def order_list_view(request):
-    """
-    Muestra todos los pedidos del usuario.
-    """
-    orders = Order.objects.filter(user=request.user)
+    orders = Order.objects.filter(user=request.user).exclude(donot_show=True).order_by('-created')
     form_search_order = SearchOrderForm()
 
     context = {
@@ -145,12 +124,16 @@ def order_list_view(request):
 
     return render(request, "pages/orders/search_orders.html", context)
 
+@login_required
+def order_donnot_show_view(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order.donot_show = True
+    order.save(update_fields=["donot_show"])
+    return redirect("orders:order_list")
+
 
 @login_required
 def order_search_view(request):
-    """
-    Permite buscar pedidos por nombre de producto.
-    """
     form = SearchOrderForm(request.POST or None)
     orders = Order.objects.filter(user=request.user)
     orders_items = orders.none()
@@ -172,28 +155,13 @@ def order_search_view(request):
 @login_required
 @require_POST
 def order_delete_view(request, order_id):
-    """
-    Elimina un pedido pendiente.
-    - Resta las ventas de productos y categorías.
-    - Devuelve el dinero al usuario.
-    - Restaura el stock de los productos.
-    """
     order = get_object_or_404(Order, id=order_id, user=request.user)
 
-    if order.status != "pending": 
+    if order.status != "pending":
         return HttpResponseBadRequest(
             "Solo se pueden eliminar pedidos pendientes."
         )
 
-    for item in order.items.all():
-        Product.objects.filter(id=item.product.id).update(
-            sales=F("sales") - item.quantity,
-            stock=F("stock") + item.quantity 
-        )
-
-        Category.objects.filter(id=item.product.category.id).update(
-            sales=F("sales") - item.quantity
-        )
 
     total_amount = order.items.aggregate(
         total=Sum(F("price") * F("quantity"))
@@ -205,4 +173,120 @@ def order_delete_view(request, order_id):
 
     order.delete()
 
-    return redirect("orders:order_list")  
+    return redirect("orders:order_list")
+
+@login_required
+def order_qr_view(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    qr_code = order_qr(order.qr_code_data)
+    return render(request, "pages/orders/order_qr.html", {
+        "order": order,
+        "qr_code": qr_code,
+    })
+
+
+@csrf_exempt
+@login_required
+@seller_required
+def process_qr_view(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            order_id = data.get("order_id")
+            qr_code = data.get("qr_code")
+        except (json.JSONDecodeError, KeyError):
+            return JsonResponse({"success": False, "message": "Datos inválidos."}, status=400)
+
+        order = get_object_or_404(Order, id=order_id)
+
+        if order.status != "pending":
+            return JsonResponse({"success": False, "message": "La orden no está pendiente."}, status=400)
+
+        if qr_code != order.qr_code_data:
+            return JsonResponse({"success": False, "message": "QR incorrecto."}, status=400)
+
+        order.status = "completed"
+        order.seller_approved = request.user
+        order.save(update_fields=["status", "seller_approved"])
+
+        return JsonResponse({"success": True, "redirect_url": reverse("shop:pending_orders")})
+
+    return JsonResponse({"success": False, "message": "Método no permitido."}, status=405)
+
+@seller_required
+@login_required
+def order_cancel_stock_view(request, order_id):
+    """
+    Cancela la orden si al menos un producto está sin stock.
+    - Los productos sin stock se registran en OrderCancelItem.
+    - TODOS los productos permanecen en OrderItem.
+    - Se reembolsa TODO el dinero de la orden (get_total_cost).
+    - La orden se marca como 'cancelled_stock'.
+    - Si algo falla, se revierte toda la operación.
+    """
+    order = get_object_or_404(Order, id=order_id)
+
+    if order.status != "pending":
+        return HttpResponseBadRequest("Solo se pueden modificar pedidos pendientes.")
+
+    if request.method == "POST":
+        product_ids = request.POST.getlist("cancel_products")
+
+        if not product_ids:
+            return HttpResponseBadRequest("Debes seleccionar al menos un producto.")
+
+        try:
+            with transaction.atomic():
+                for item in order.items.all():
+                    if str(item.product.id) in product_ids:
+                        OrderCancelItem.objects.create(
+                            order=order,
+                            product=item.product,
+                            price=item.price,
+                            quantity=item.quantity,
+                        )
+
+                if order.paid:
+                    refund_amount = order.get_total_cost()
+                    if refund_amount > 0 and hasattr(order.user, "credit"):
+                        order.user.credit = F("credit") + refund_amount
+                        order.user.save(update_fields=["credit"])
+
+                order.status = "cancelled"
+                order.save(update_fields=["status"])
+
+        except Exception as e:
+            return HttpResponseBadRequest(f"Error al cancelar la orden: {str(e)}")
+
+        return redirect("orders:order_list")
+
+    context = {
+        "order": order,
+        "items": order.items.select_related("product"),
+    }
+    return render(request, "pages/shop/sell/cancel_stock.html", context)
+
+@login_required
+def order_detail_view(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    can_refund = order.status == "completed"
+    can_delete = order.status == "pending"
+    if request.method == "POST":
+        if "refund" in request.POST and can_refund:
+            # Reembolsa el total y cambia estado
+            refund_amount = order.get_total_cost()
+            if refund_amount > 0 and hasattr(order.user, "credit"):
+                order.user.credit = F("credit") + refund_amount
+                order.user.save(update_fields=["credit"])
+            order.status = "refunded"
+            order.save(update_fields=["status"])
+            return redirect("orders:order_list")
+        elif "delete" in request.POST and can_delete:
+            order.delete()
+            return redirect("orders:order_list")
+    context = {
+        "order": order,
+        "can_refund": can_refund,
+        "can_delete": can_delete,
+    }
+    return render(request, "pages/orders/order_detail.html", context)

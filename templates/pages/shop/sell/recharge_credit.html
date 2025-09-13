@@ -1,0 +1,64 @@
+{% extends 'pages/shop/sell/sell-center.html' %}
+{% load static %}
+
+{% block title %}Recargar Crédito{% endblock %}
+
+{% block dashboard_content %}
+<section class="products-list-section">
+    <div class="products-container">   
+        <header class="sell-header">
+            <h1 class="sell-heading">Recargar Crédito</h1>
+        </header>
+
+        <form id="sell-form" action="{% url 'shop:seller_recharge_credit' %}" method="POST" class="sell-form">
+            {% csrf_token %}
+
+            {# Errores generales del formulario #}
+            {% if form.non_field_errors %}
+                <div class="errorlist">
+                    <ul>
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="{{ form.code.id_for_label }}"><strong>Código</strong></label>
+                {{ form.code }}
+                {% if form.code.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.code.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.amount.id_for_label }}"><strong>Monto a recargar</strong></label>
+                {{ form.amount }}
+                {% if form.amount.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.amount.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <button type="submit" class="sell-submit primary_btn">Recargar</button>
+        </form>
+
+        {# Mensajes del sistema (éxito, error, info) #}
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

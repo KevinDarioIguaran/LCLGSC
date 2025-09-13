@@ -24,6 +24,9 @@
             <button type="submit" class="btn-primary">Entrar</button>
         </div>
         <div class="separator"><hr></div>
-        <a href="{% url 'users:signup' %}" class="btn-link">¿Primer acceso? Crear contraseña</a>
+        <div class="additional-links">
+            <a href="{% url 'users:signup' %}" class="btn-link">¿Primer acceso? Crear contraseña</a>
+            <a href="{% url 'users:password_reset' %}" class="btn-link">¿Olvidaste tu contraseña?</a>
+        </div>
     </form>
 {% endblock %}

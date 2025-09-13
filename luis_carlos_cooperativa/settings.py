@@ -32,11 +32,12 @@ ALLOWED_HOSTS = [
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://192.168.1.11:9000",
+    "http://192.168.1.6:9000",
     "http://localhost:9000",
     "http://127.0.0.1:9000",
-    "https://5edfab3ff348.ngrok-free.app",
+    "https://189d6def587d.ngrok-free.app",
     "http://192.168.1.18:9000"
+    
 ]
 
 
@@ -126,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es'
 
 TIME_ZONE = 'America/Bogota'
 

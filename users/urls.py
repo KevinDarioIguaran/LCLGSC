@@ -12,7 +12,8 @@ urlpatterns = [
     path("perfil/cambiar-contraseña/", views.change_password_view, name="change_password"),
     path("perfil/crear-contraseña/", views.set_password, name="set_password"),
     path("perfil/eliminar-cuenta/", views.delete_account_view, name="delete_account"),
-    path("perfil/logout/", views.logout_view, name="logout"),
+    path("perfil/desconectar/", views.logout_view, name="logout"),
+    path("perfil/restablecer-contraseña/", views.password_reset_view, name="password_reset"),
 ]
 
 if settings.DEBUG:

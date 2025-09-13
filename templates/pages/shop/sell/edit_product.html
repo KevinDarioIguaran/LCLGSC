@@ -1,15 +1,16 @@
 {% extends 'pages/shop/sell/sell-center.html' %}
 {% load static %}
+{% load humanize %}
 
-{% block title %}Vender un producto{% endblock %}
+{% block title %}Editar producto{% endblock %}
 
 {% block dashboard_content %}
     <section class="products-list-section">
-        <div class="products-container">  
+        <div class="products-container">   
             <header class="sell-header">
-                <h1 class="sell-heading">Vender un producto</h1>
+                <h1 class="sell-heading">Editar producto</h1>
             </header>
-            <form id="sell-form" action="{% url 'shop:sell' %}" method="POST" class="sell-form" enctype="multipart/form-data">
+            <form id="sell-form" action="{% url 'shop:edit_product' product.id %}" method="POST" class="sell-form" enctype="multipart/form-data">
                 {% csrf_token %}
                 
                 <div>
@@ -34,14 +35,19 @@
                 </div>
 
                 <div class="image-upload-wrapper">
-                    <label><strong>Imagen del producto</strong></label>
-                    <div class="custom-file-dropzone" id="dropzone" tabindex="0" role="button" aria-label="Arrastra o haz clic para subir imagen">
-                        <span id="file-name">Haz clic o arrastra una imagen aquí</span>
-                        {{ form.image }}
+                    <label><strong>Imagen del producto actual</strong></label>
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="Imagen actual" class="preview-image">
+                    {% endif %}
+                    <div class="image-upload-wrapper">
+                        <label><strong>Imagen del producto</strong></label>
+                        <div class="custom-file-dropzone" id="dropzone" tabindex="0" role="button" aria-label="Arrastra o haz clic para subir imagen">
+                            <span id="file-name">Haz clic o arrastra una imagen aquí</span>
+                            {{ form.image }}
+                        </div>
                         {% if form.image.errors %}<ul class="errorlist">{{ form.image.errors }}</ul>{% endif %}
                     </div>
                 </div>
-                
                 <div>
                     <label for="{{ form.discount_percent.id_for_label }}"><strong>Descuento (%)</strong></label>
                     {{ form.discount_percent }}
@@ -52,15 +58,15 @@
                     {{ form.offer_active }}
                     {% if form.offer_active.errors %}<ul class="errorlist">{{ form.offer_active.errors }}</ul>{% endif %}
                 </div>
-                
                 <div class="form-check">
                     <label class="form-check-label" for="{{ form.available.id_for_label }}">¿Disponible?</label>
                     {{ form.available }}
                     {% if form.available.errors %}<ul class="errorlist">{{ form.available.errors }}</ul>{% endif %}
                 </div>
-
-                <button type="submit" class="sell-submit primary_btn">Publicar</button>
+                <button type="submit" class="sell-submit primary_btn">Actualizar</button>
             </form>
         </div>
     </section>
 {% endblock %}
+
+

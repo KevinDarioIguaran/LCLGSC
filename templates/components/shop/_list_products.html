@@ -13,12 +13,29 @@
         {% for product in products %}
             <div class="product-card">
                 <a href="{{ product.get_absolute_url }}" class="links_black">
-                    <img src="{{ product.get_image_url }}" alt="{{ product.name }}" class="product-card__img">
+                    <div class="product-card__img-container">
+                        <img src="{{ product.get_image_url }}" alt="{{ product.name }}" class="product-card__img" loading="lazy">
+                        {% if product.offer_active and product.discount_percent > 0 %}
+                            <span class="product-discount-badge">-{{ product.discount_percent }}%</span>
+                        {% endif %}
+                    </div>
                     <h3 class="product-card__seller-name">{{ product.seller.get_cooperative_name }}</h3>
                     <hr>
                     <h3 class="product-card__name">{{ product.name }}</h3>
-                    <p class="product-card__price">{{ product.price|floatformat:0|intcomma }} COP</p>
+                    {% if product.offer_active and product.get_final_price != product.price %}
+                        <div class="price-info">
+                            <p class="cart__box-price-original">{{ product.price|floatformat:0|intcomma }} COP</p>
+                            <p class="cart__box-price">{{ product.get_final_price|floatformat:0|intcomma }} COP</p>
+                        </div>
+                    {% else %}
+                        <p class="cart__box-price-normal">{{ product.price|floatformat:0|intcomma }} COP</p>
+                    {% endif %}
                 </a>
+                <form action="{% url 'shop:cart_add' product.id %}" method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="quantity" value="1"> 
+                    <button class="add-to-cart-btn" type="submit">Añadir al carrito</button>
+                </form>
             </div>
         {% empty %}
             <p class="products-list-empty">No hay productos disponibles.</p>

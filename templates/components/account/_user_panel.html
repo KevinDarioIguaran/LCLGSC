@@ -36,26 +36,9 @@
                 </div>
             {% endif %}
 
-            {% if user.is_seller %}
-                <div class="edit-info-row">
-                    <div class="edit-info-field">Logo de la cooperativa</div>
-                    <div class="edit-info-value">
-                        {% if user.get_cooperative_logo_url %}
-                            <img src="{{ user.get_cooperative_logo_url }}" alt="Logo" style="max-height: 60px;">
-                        {% else %}
-                            No disponible
-                        {% endif %}
-                    </div>
-                </div>
-            {% endif %}
-
             <div class="edit-info-row">
                 <div class="edit-info-field">Crédito</div>
                 <div class="edit-info-value">${{ user.credit|floatformat:0|intcomma }} COP</div>
-            </div>
-            <div class="edit-info-row">
-                <div class="edit-info-field">Deuda</div>
-                <div class="edit-info-value">${{ user.debt|floatformat:0|intcomma }} COP</div>
             </div>
         </div>
     </div>

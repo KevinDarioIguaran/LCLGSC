@@ -18,7 +18,7 @@ def create_order(user_code, products: list, paid: bool = False, school_address: 
     user = get_object_or_404(User, code=user_code)
 
     if not school_address:
-        raise ValidationError("La dirección del colegio no puede estar vacía.")
+        raise ValidationError("The address cannot be empty.")
 
     order = Order.objects.create(
         user=user,
@@ -30,8 +30,8 @@ def create_order(user_code, products: list, paid: bool = False, school_address: 
         try:
             product = Product.objects.get(id=p["product_id"])
         except Product.DoesNotExist:
-            raise ValidationError(f"El producto con ID {p['product_id']} no existe.")
-        
+            raise ValidationError(f"The product ID {p['product_id']} does not exist.")
+
         OrderItem.objects.create(
             order=order,
             product=product,

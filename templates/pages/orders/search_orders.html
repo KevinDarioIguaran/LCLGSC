@@ -5,84 +5,76 @@
 {% block title %}Órdenes{% endblock %}
 
 {% block extra_styles %}
-    <link rel="stylesheet" href="{% static 'styles/pages/orders/order.css' %}">
+<link rel="stylesheet" href="{% static 'styles/pages/orders/order.css' %}">
 {% endblock %}
 
 {% block content %}
-    {% include "components/navbar/navbar.html" %}
+{% include "components/navbar/navbar.html" %}
+<div class="order-container">
+    <h2 class="order-title">Tus Órdenes</h2>
 
-    <div class="order-container">
-        <h2 class="order-title">Órdenes</h2>
-
-        <!-- Buscador de órdenes -->
-        <div class="order-search-wrapper">
-            <form action="{% url 'orders:order_search' %}" method="post" class="order-search-form">
-                {% csrf_token %}
-                {{ form_search_order.search_query }}
-                <button type="submit" class="order-confirm-btn">Buscar</button>
-            </form>
-        </div>
-
-        <!-- Lista de órdenes -->
-        {% if orders %}
-            <div class="order-table-wrapper">
-                <table class="order-table">
-                    <thead>
-                        <tr>
-                            <th>Número de orden</th>
-                            <th>Productos</th>
-                            <th>Lugar de entrega</th>
-                            <th>Total</th>
-                            <th>Estado</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for order in orders %}
-                            <tr>
-                                <td>#{{ order.id }}</td>
-                                <td>
-                                    <ul>
-                                        {% for item in order.items.all %}
-                                            <li>
-                                                {{ item.product.name }} (x{{ item.quantity }}) — 
-                                                ${{ item.get_total_cost|floatformat:0|intcomma }}
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                </td>
-                                <td>{{ order.get_school_address_display }}</td>
-
-                                <td class="order-total-amount">
-                                    ${{ order.get_total_cost|floatformat:0|intcomma }}
-                                </td>
-                                <td>
-                                    <span class="order-warning-title">{{ order.get_status_display }}</span>
-                                </td>
-                                <td>
-                                    {% if order.status == 'pending' %}
-                                        <form action="{% url 'orders:order_delete' order.id %}" method="post" style="display:inline-block;">
-                                            {% csrf_token %}
-                                            <button type="submit" class="order-back-btn">Cancelar</button>
-                                        </form>
-                                    {% endif %}
-                                    {% if order.status == 'completed' %}
-                                        <form action="" method="post">
-                                            {% csrf_token %}
-                                            <input type="hidden" name="order_id_hidden" value="{{ order.id }}">
-                                            <button type="submit" class="order-back-btn">Remover</button>
-                                        </form>
-                                    {% endif %}
-                                </td>
-                            </tr>
+    {% if orders %}
+        <div class="order-table-wrapper">
+        <table class="order-table">
+            <thead>
+                <tr>
+                    <th>Numero</th>
+                    <th class="product-cell">Productos</th>
+                    <th>Lugar</th>
+                    <th>Total</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                <tr>
+                    <td>#{{ order.id }}</td>
+                    <td class="product-cell">
+                        {% for item in order.items.all %}
+                            {{ item.product.name }} <span>(x{{ item.quantity }})</span><br>
                         {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% else %}
-            <p class="order-warning-title">No tienes pedidos o no se han encontrado.</p>
-        {% endif %}
-    </div>
-
-    {% include "components/footer.html" %}
+                    </td>
+                    <td>{{ order.get_school_address_display }}</td>
+                    <td>${{ order.get_total_cost|floatformat:0|intcomma }} COP</td>
+                    <td>
+                        <span class="order-badge order-{{ order.status }}">
+                            {{ order.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="order-actions">
+                        {% if order.status == 'pending' %}
+                            <form action="{% url 'orders:order_delete' order.id %}" method="post">
+                                {% csrf_token %}
+                                <button class="order-cancel-btn" title="Cancelar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L6 8L12 14"></path><path d="M6 8h12a4 4 0 0 1 0 8h-2"></path></svg>
+                                    Cancelar
+                                </button>
+                            </form>
+                            <a href="{% url 'orders:order_qr' order.id %}" title="Ver QR" class="order-qr-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><line x1="12" y1="12" x2="12" y2="12"></line><line x1="16" y1="16" x2="16" y2="16"></line><line x1="12" y1="16" x2="12" y2="16"></line><line x1="16" y1="12" x2="16" y2="12"></line></svg>
+                            QR
+                        </a>
+                        {% else %}
+                            <form action="" method="post">
+                                {% csrf_token %}
+                                <button class="order-review-btn order-cancel-btn" title="Eliminar">
+                                    Eliminar
+                                </button>
+                            </form>
+                        {% endif %}
+                        <a href="{% url 'orders:order_detail' order.id %}" class="order-cancel-btn order-detail-btn" title="Ver Detalle">
+                            Detalle
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    {% else %}
+        <p>No tienes órdenes aún.</p>
+    {% endif %}
+</div>
 {% endblock %}

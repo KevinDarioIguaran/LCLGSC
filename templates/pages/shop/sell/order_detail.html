@@ -1,0 +1,116 @@
+{% extends 'pages/shop/sell/sell-center.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Detalle de la Orden #{{ order.id }}{% endblock %}
+
+{% block dashboard_content %}
+<section class="products-list-section">
+    <div class="products-container">
+        <header class="products-header">
+            <h1 class="sell-heading">Detalle de la Orden #{{ order.id }}</h1>
+        </header>
+
+        {% if order.items.all %}
+            <table class="products-table">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in order.items.all %}
+                        <tr>
+                            <td>
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="product-thumb">
+                                {% else %}
+                                    <span class="no-image">Sin imagen</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.product.name }}</td>
+                            <td>${{ item.price|floatformat:0|intcomma }} COP</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ item.get_total_cost|floatformat:0|intcomma }} COP</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="4" class="order-total-label">Total:</td>
+                        <td class="order-total-amount">${{ order.get_total_cost|floatformat:0|intcomma }} COP</td>
+                    </tr>
+                </tfoot>
+            </table>
+            <div class="order-actions">
+                <p class="action-label">Acción:</p>
+                <div class="action-buttons">
+                    <a id="btn-approve" class="btn-action edit">Aprobar</a>
+                    <a href="{% url 'orders:order_cancel_stock' order.id %}" class="btn-action delete">Cancelar por falta de stock</a>
+                </div>
+            </div>
+            
+            <br>
+
+            <div id="qr-reader"></div>
+            <p id="qr-result"></p>
+            
+            <br>
+
+        {% else %}
+            <p class="no-products">Esta orden no tiene productos.</p>
+        {% endif %}
+    </div>
+</section>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+<script>
+  let html5QrCode;
+
+  document.getElementById("btn-approve").addEventListener("click", function () {
+    const reader = document.getElementById("qr-reader");
+    reader.style.display = "block";
+
+    html5QrCode = new Html5Qrcode("qr-reader");
+
+    html5QrCode.start(
+      { facingMode: "environment" },
+      { fps: 10, qrbox: 250 },
+      onScanSuccess
+    ).catch(err => {
+      console.error("Error al iniciar cámara:", err);
+      document.getElementById("qr-result").innerText = "No se pudo acceder a la cámara.";
+    });
+  });
+  
+  function onScanSuccess(decodedText, decodedResult) {
+    fetch("{% url 'orders:process_qr' %}", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-CSRFToken": "{{ csrf_token }}"
+      },
+      body: JSON.stringify({
+        order_id: "{{ order.id }}",
+        qr_code: decodedText
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        window.location.href = data.redirect_url;
+      } else {
+        document.getElementById("qr-result").innerText = data.message;
+      }
+    })
+    .catch(err => {
+      console.error("Error servidor:", err);
+      document.getElementById("qr-result").innerText = "Error validando QR.";
+    });
+  }
+</script>
+{% endblock %}

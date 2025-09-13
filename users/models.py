@@ -91,14 +91,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         null=True,
     )
 
-    cooperative_logo = models.ImageField(
-        upload_to='cooperative_logos/',
-        verbose_name=_("Logo de la cooperativa"),
-        help_text=_("Logo de la cooperativa del vendedor."),
-        blank=True,
-        null=True,
-    )
-
     credit = models.DecimalField(
         max_digits=10,
         decimal_places=2,
@@ -109,18 +101,6 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         ],
         verbose_name=_("Crédito"),
     )
-
-    debt = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        default=0,
-        validators=[
-            MinValueValidator(0),
-            MaxValueValidator(20000)
-        ],
-        verbose_name=_("Deuda"),
-    )
-
 
     USERNAME_FIELD = 'code'
     REQUIRED_FIELDS = ['first_name', 'last_name']

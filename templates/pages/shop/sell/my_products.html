@@ -1,0 +1,76 @@
+{% extends 'pages/shop/sell/sell-center.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Mis productos{% endblock %}
+
+{% block dashboard_content %}
+<section class="products-list-section">
+    <div class="products-container">
+        <header class="products-header">
+            <h1 class="sell-heading">Mis productos</h1>
+
+            <form method="get" action="{% url 'shop:search_my_products' %}" class="search-form-sell">
+                <input type="text" name="q" placeholder="Buscar producto..."
+                       value="{{ query|default:'' }}">
+
+                <select name="category">
+                    <option value="">Todas las categorías</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <button type="submit">Buscar</button>
+            </form>
+        </header>
+
+        {% if products %}
+            <table class="products-table">
+                <thead>
+                    <tr>
+                        <th>Imagen</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                        <tr>
+                            <td>
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-thumb">
+                                {% else %}
+                                    <span class="no-image">Sin imagen</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ product.name }}</td>
+                            <td>${{ product.price|floatformat:0|intcomma }} COP</td>
+                            <td>
+                                <ul class="actions-list">
+                                    <li>
+                                        <a href="{% url 'shop:edit_product' product.id %}" class="btn-action edit">Editar</a>
+                                    </li>
+                                    <li>
+                                        <form action="{% url 'shop:delete_product' product.id %}" method="POST">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn-action delete">Eliminar</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                                
+
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p class="no-products">No tienes productos publicados aún.</p>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

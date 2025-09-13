@@ -3,68 +3,159 @@
 
 {% block content %}
     {% block extra_styles %}
-        <link rel="stylesheet" href="{% static 'styles/components/about.css' %}">
+        <link rel="stylesheet" href="{% static 'styles/pages/home/about.css' %}">
     {% endblock %}
 
     {% include 'components/navbar/navbar.html' %}
 
+    <!-- Header -->
+    <div class="about">
+        <header class="gradient-bg header">
+            <div class="container header-content">
+                <h1 class="title">Salón 11.02 - I.E Luis Carlos Galán Sarmiento</h1>
+                <p class="subtitle">
+                    La mejor promoción del año. Compromiso, creatividad y unión nos definen.
+                </p>
+            </div>
+        </header>
 
-    <main class="main">
-        <section class="section">
-            <h1>Bienvenidos a Rurales Colombia</h1>
-            <br>
-            <p><strong>Rurales Colombia</strong> es un mercado en línea donde lo que pidas te lo llevamos a tu casa. Ofrecemos una amplia variedad de productos del campo colombiano, llevando la frescura y calidad directamente a tu puerta.</p>
-            <p>Ya no tienes que ir al mercado ni preocuparte por la falta de tiempo; nosotros nos encargamos de llevar lo mejor de nuestros productos a tu hogar con solo un clic. ¡Descubre la variedad de productos frescos y de calidad que tenemos para ti!</p>
+        <!-- Misión y Logros -->
+        <section class="section section-hero">
+            <div class="container-hero">
+                <div>
+                    <h2 class="heading">Nuestro Espíritu</h2>
+                    <p class="paragraph">
+                        El salón <strong>11.02</strong> fue reconocido por su excelencia académica y por la creación de la cafetería online <strong>“Café Web L.C.G.L”</strong>, un proyecto innovador de <strong>Kevin Darío Iguarán Márquez</strong> que marcó la diferencia en la comunidad estudiantil.
+                    </p>
+                    <div class="stats">
+                        <div class="stat">
+                            <div class="stats-counter">12</div>
+                            <p class="stat-label">Proyectos Estudiantiles</p>
+                        </div>
+                        <div class="stat">
+                            <div class="stats-counter">30+</div>
+                            <p class="stat-label">Eventos Realizados</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="team-card">
+                    <div class="team-bg"></div>
+                    <div class="team-photos">
+                        <div class="team-photo">
+                            <img src="{% static 'assets/imgs/me.jpg' %}" alt="Kevin Darío Iguarán Márquez">
+                        </div>
+                        <div class="team-photo">
+                            <img src="{% static 'assets/imgs/juan.jpg' %}" alt="Juan José Ortiz Mercado">
+                        </div>
+                        <div class="team-photo">
+                            <img src="{% static 'assets/imgs/luis.jpg' %}" alt="Luis Alexander Valderrama Hernández">
+                        </div>
+                    </div>
+                    <div class="team-info">
+                        <div class="team-title">Grupo Alpha-Cesar</div>
+                        <div class="team-desc">Innovación y creatividad</div>
+                    </div>
+                </div>
         </section>
 
-        <section class="section">
-            <h2>¿Cómo Funciona?</h2>
-            <ul>
-                <li>
-                    <h3>Selecciona tus productos</h3>
-                    <p>Explora nuestro catálogo y elige los productos que más te gusten. Desde frutas frescas hasta productos orgánicos, tenemos de todo.</p>
-                </li>
-                <li>
-                    <h3>Realiza tu pedido</h3>
-                    <p>Haz tu pedido de manera fácil y rápida a través de nuestra plataforma en línea. Nuestro proceso de compra es 100% seguro.</p>
-                </li>
-                <li>
-                    <h3>Te lo llevamos a tu casa</h3>
-                    <p>Una vez confirmes tu pedido será empacado de manera inmediata y enviado a la dirección que proporcionaste en el menor tiempo posible.</p>
-                </li>
-                <li>
-                    <h3>Y finalmente pagas</h3>
-                    <p>Cuando el producto llegue a tu casa, puedes pagar con el servicio de contraentrega después de verificar el pedido.</p>
-                </li>
-            </ul>
+        <!-- Video Presentación -->
+        <section class="section section-gray">
+            <div class="container">
+                <div class="center mb">
+                    <h2 class="heading">Conoce Nuestro Proyecto</h2>
+                </div>
+                <div class="video-wrapper">
+                    <div class="video-container">
+                        <div class="video-placeholder" onclick="playVideo(this)">
+                            <div class="play-button">
+                                <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                                    <path d="M8 5v14l11-7z" fill="#667eea"/>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="video-label">
+                        Video: "Historia de Café Web L.C.G.L" - 3:45 min
+                    </p>
+                </div>
+            </div>
         </section>
 
-        <section class="section">
-            <h2>¿Por qué elegir Rurales Colombia?</h2>
-            <ul>
-                <li>
-                    <h3>Productos frescos y de calidad</h3>
-                    <p>Trabajamos directamente con productores locales para garantizar la frescura y la mejor calidad en cada uno de nuestros productos.</p>
-                </li>
-                <li>
-                    <h3>Comodidad y ahorro de tiempo</h3>
-                    <p>Olvídate de las largas filas y el tiempo perdido en el mercado. Hacemos que tu compra sea rápida y sencilla, con entrega a domicilio.</p>
-                </li>
-                <li>
-                    <h3>Apoyo a los productores locales</h3>
-                    <p>Al comprar en Rurales Colombia, apoyas a los productores del campo colombiano, ayudando a fortalecer nuestra economía local.</p>
-                </li>
-            </ul>
+        <!-- Equipo Destacado -->
+        <section class="section section-white">
+            <div class="container">
+                <div class="center mb">
+                    <h2 class="heading">Nuestro Equipo</h2>
+                </div>
+                <div class="grid grid-3">
+                    <!-- Miembro 1 -->
+                    <div class="card card-hover">
+                        <img src="{% static 'assets/imgs/me.jpg' %}" alt="Kevin Darío Iguarán Márquez" class="avatar">
+                        <h3 class="card-title">Kevin Darío Iguarán Márquez</h3>
+                        <p class="card-role">Fundador Café Web L.C.G.L</p>
+                        <p class="card-desc">
+                            Líder innovador y desarrollador del proyecto que transformó la experiencia estudiantil.
+                        </p>
+                    </div>
+                    <!-- Miembro 2 -->
+                    <div class="card card-hover">
+                        <img src="{% static 'assets/imgs/juan.jpg' %}" alt="Juan José Ortiz Mercado" class="avatar">
+                        <h3 class="card-title">Juan José Ortiz Mercado</h3>
+                        <p class="card-role">Gestor de Productos</p>
+                        <p class="card-desc">
+                            Coordinador de productos que fortalecieron las fundamentales en la presentación.
+                        </p>
+                    </div>
+                    <!-- Miembro 3 -->
+                    <div class="card card-hover">
+                        <img src="{% static 'assets/imgs/luis.jpg' %}" alt="Luis Alexander Valderrama Hernández" class="avatar">
+                        <h3 class="card-title">Luis Alexander Valderrama Hernández</h3>
+                        <p class="card-role">Diseñador Creativo</p>
+                        <p class="card-desc">
+                            Responsable de la imagen y comunicación visual del proyecto Café Web.
+                        </p>
+                    </div>
+                </div>
+            </div>
         </section>
 
-        <section class="section contact-info">
-            <h2>Contáctanos</h2>
-            <p>Si tienes alguna pregunta o necesitas más información sobre nuestros productos, no dudes en contactarnos:</p>
-            <p><strong>Email:</strong> <a href="mailto:iguarankevin53@gmail.com">iguarankevin53@gmail.com</a></p>
-            <p><strong>Teléfono:</strong> +57 3234441823</p>
+
+        <!-- Galería de Momentos -->
+        <section class="section section-gray">
+            <div class="container">
+                <div class="center mb">
+                    <h2 class="heading">Momentos Inolvidables de 11.02 JM</h2>
+                </div>
+                <div class="grid grid-3">
+                    <div class="card card-hover gallery-card">
+                        <img src="{% static 'assets/imgs/afrocolombianidad.jpg' %}" alt="Afrocolombianidad 11.02" class="gallery-img" data-title="Afrocolombianidad" data-desc="Celebración de la diversidad y cultura en el aula." onclick="showMomentModal(this)">
+                        <div class="gallery-content">
+                            <h3 class="gallery-title">Afrocolombianidad</h3>
+                            <p class="gallery-desc">Celebración de la diversidad y cultura en el aula.</p>
+                        </div>
+                    </div>
+                    <div class="card card-hover gallery-card">
+                        <img src="{% static 'assets/imgs/diadelhombre.jpg' %}" alt="Día del Hombre 11.02" class="gallery-img" data-title="Día del Hombre" data-desc="Reconocimiento y celebración de los estudiantes." onclick="showMomentModal(this)">
+                        <div class="gallery-content">
+                            <h3 class="gallery-title">Día del Hombre</h3>
+                            <p class="gallery-desc">Reconocimiento y celebración de los estudiantes.</p>
+                        </div>
+                    </div>
+                    <div class="card card-hover gallery-card">
+                        <img src="{% static 'assets/imgs/diadelamujer.jpg' %}" alt="Día de la Mujer 11.02" class="gallery-img" data-title="Día de la Mujer" data-desc="Homenaje a la fuerza y dedicación de nuestras compañeras." onclick="showMomentModal(this)">
+                        <div class="gallery-content">
+                            <h3 class="gallery-title">Día de la Mujer</h3>
+                            <p class="gallery-desc">Homenaje a la fuerza y dedicación de nuestras compañeras.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </section>
-    </main>
+    </div>
 
-    {% include 'components/footer.html' %}
 
+    {% block extra_scripts %}
+        <script src="{% static 'js/home/about.js' %}"></script>
+    {% endblock %}
 {% endblock %}

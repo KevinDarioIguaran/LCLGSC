@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Category, Product, Cart, CartItem, ShowBestOffers
+from .models import Category, Product, Cart, CartItem, ShowBestOffers, RechargeLogs
 from django.utils.translation import gettext_lazy as _   
 
 
@@ -13,7 +13,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'price', 'stock', 'available', 'seller', 'category') 
+    list_display = ('name', 'slug', 'price', 'seller', 'category')
     prepopulated_fields = {'slug': ('name',)}
 
 
@@ -32,3 +32,10 @@ class ShowBestOffersAdmin(admin.ModelAdmin):
     list_display = ('id', 'category', 'created_at')
     list_filter = ('created_at',)
     search_fields = ('category__name',)
+
+@admin.register(RechargeLogs)
+class RechargeLogsAdmin(admin.ModelAdmin):
+    list_display = ('seller', 'code', 'amount', 'created_at')
+    list_filter = ('created_at', 'seller')
+    search_fields = ('code', 'seller__username', 'seller__email')
+    readonly_fields = ('created_at',)

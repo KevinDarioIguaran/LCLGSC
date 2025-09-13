@@ -1,0 +1,54 @@
+{% extends 'pages/shop/sell/sell-center.html' %}
+{% load humanize %}
+
+{% block title %}Cancelar productos por falta de stock - Orden #{{ order.id }}{% endblock %}
+
+{% block dashboard_content %}
+<section class="products-list-section">
+    <div class="products-container">
+        <header class="products-header">
+            <h1 class="sell-heading">Cancelar productos de la Orden #{{ order.id }}</h1>
+        </header>
+
+        <form method="post">
+            {% csrf_token %}
+            <table class="products-table">
+                <thead>
+                    <tr>
+                        <th>Seleccionar</th>
+                        <th>Imagen</th>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="cancel_products" value="{{ item.product.id }}">
+                            </td>
+                            <td>
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" class="product-thumb">
+                                {% else %}
+                                    <span class="no-image">Sin imagen</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.product.name }}</td>
+                            <td>${{ item.price|floatformat:0|intcomma }}</td>
+                            <td>{{ item.quantity }}</td>
+                            <td>${{ item.get_total_cost|floatformat:0|intcomma }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="order-actions">
+                <button type="submit" class="btn-action delete">Subir</button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
