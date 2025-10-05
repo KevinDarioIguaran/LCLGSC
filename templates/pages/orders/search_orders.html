@@ -52,12 +52,12 @@
                                     Cancelar
                                 </button>
                             </form>
-                            <a href="{% url 'orders:order_qr' order.id %}" title="Ver QR" class="order-qr-btn">
+                            <a href="{% url 'orders:order_qr' order.id %}" title="Ver QR" class="order-q-btn">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><line x1="12" y1="12" x2="12" y2="12"></line><line x1="16" y1="16" x2="16" y2="16"></line><line x1="12" y1="16" x2="12" y2="16"></line><line x1="16" y1="12" x2="16" y2="12"></line></svg>
                             QR
                         </a>
                         {% else %}
-                            <form action="" method="post">
+                            <form action="{% url 'orders:order_remove' order.id %}" method="post">
                                 {% csrf_token %}
                                 <button class="order-review-btn order-cancel-btn" title="Eliminar">
                                     Eliminar

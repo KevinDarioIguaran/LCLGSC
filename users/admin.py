@@ -20,12 +20,6 @@ class AppListFilter(admin.SimpleListFilter):
             return queryset.filter(content_type__app_label=self.value())
         return queryset
 
-
-admin.site.site_header = "Panel de Cooperativa Luis Carlos"
-admin.site.site_title = "Panel de Cooperativa Luis Carlos"
-admin.site.index_title = "Bienvenido al panel"
-
-
 @admin.register(LogEntry)
 class LogEntryAdmin(admin.ModelAdmin):
     list_display = (

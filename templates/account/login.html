@@ -8,16 +8,16 @@
 
 {% block content %}
 <div class="login-page-container">
-    <div class="login-form-side">
-        <div class="login-container">
-            <a class="login-logo-side" href="{% url 'home:home' %}">
-                <img src="{% static 'assets/icons/favicon.ico' %}" alt="Logo Fundación" class="login-logo-img">
-                <h1 class="name-institution">Luis Carlos Galan Sarmiento</h1>
+    <div class="info-panel">
+        <img src="{% static 'assets/imgs/i.e-luis-carlos-galan-sarmiento.webp' %}" alt="Imagen de I.E luis Carlos Galan Sarmiento" class="info-image">
+        <div class="info-overlay"></div>
+        <div class="info-content">
+            <a class="info-logo" href="{% url 'home:home' %}">
+                <img src="{% static 'assets/icons/favicon.ico' %}" alt="Logo Fundación LynKora" class="info-logo-img">
+                <h1 class="info-name">Café Web L.C.G.S</h1>
             </a>
-            <div class="login-box">
-                {% block item %} {% endblock %}
-            </div>
         </div>
     </div>
+    {% block item %}{% endblock %}
 </div>
 {% endblock %}

@@ -31,11 +31,13 @@
                         <p class="cart__box-price-normal">{{ product.price|floatformat:0|intcomma }} COP</p>
                     {% endif %}
                 </a>
-                <form action="{% url 'shop:cart_add' product.id %}" method="post">
-                    {% csrf_token %}
-                    <input type="hidden" name="quantity" value="1"> 
-                    <button class="add-to-cart-btn" type="submit">Añadir al carrito</button>
-                </form>
+                {% if not product.seller == request.user %}
+                    <form action="{% url 'shop:cart_add' product.id %}" method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="quantity" value="1"> 
+                        <button class="add-to-cart-btn" type="submit">Añadir al carrito</button>
+                    </form>
+                {% endif %}
             </div>
         {% empty %}
             <p class="products-list-empty">No hay productos disponibles.</p>

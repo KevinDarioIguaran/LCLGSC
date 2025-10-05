@@ -13,7 +13,7 @@ from shop.models import Product, Category
 from users.models import CustomUser
 
 # Rutas base
-BASE_DIR = r"C:\Users\Go\Documents\luis_carlos_coperativa_repo"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Colores para consola

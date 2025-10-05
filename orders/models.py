@@ -18,6 +18,7 @@ class Order(models.Model):
     )
     created = models.DateTimeField(auto_now_add=True)
     paid = models.BooleanField(default=False)
+    
     arrival_time = models.DateTimeField(
         verbose_name='Fecha de entrega',
         blank=True,

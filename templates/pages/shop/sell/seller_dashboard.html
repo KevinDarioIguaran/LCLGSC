@@ -1,0 +1,197 @@
+{% extends 'pages/shop/sell/sell-center.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Análisis de Ventas{% endblock %}
+
+{% block extra_styles %}
+    <link rel="stylesheet" href="{% static 'styles/pages/shop/sell/sell.css' %}">
+{% endblock %}
+
+{% block dashboard_content %}
+    <div class="products-list-section">
+        <div class="products-container"> 
+            <div class="sell-header">
+                <h2 class="sell-heading">Resumen de Ingresos</h2>
+            </div>
+
+            <div class="actions-list-row2">
+                <div class="sell-container">
+                    <div class="products-header">
+                        <h3 class="sell-heading">Ingresos Hoy</h3>
+                    </div>
+                    <canvas id="IncomeTodayChart" class="dashboard-chart"></canvas>
+                    <p class="dashboard-info"><strong>Ingresos hoy:</strong> ${{ revenue_today|floatformat:0|intcomma }} COP</p>
+                </div>
+
+                <div class="sell-container">
+                    <div class="products-header">
+                        <h3 class="sell-heading">Último Mes</h3>
+                    </div>
+                    <canvas id="IncomeMonthChart" class="dashboard-chart"></canvas>
+                    <p class="dashboard-info"><strong>Ingresos último mes:</strong> ${{ revenue_last_month|floatformat:0|intcomma }} COP</p>
+                </div>
+            </div>
+
+            <div class="sell-container">
+                <div class="products-header">
+                    <h3 class="sell-heading">Totales Este Año</h3>
+                </div>
+                <canvas id="IncomeYearChart" class="dashboard-chart"></canvas>
+                <p class="dashboard-info"><strong>Ingresos totales este año:</strong> ${{ revenue_total_year|floatformat:0|intcomma }} COP</p>
+            </div>
+        </div>
+
+        <!-- RESUMEN DE VENTAS -->
+        <div class="products-container"> 
+            <div class="sell-header">
+                <h2 class="sell-heading">Resumen de Ventas</h2>
+            </div>
+            
+            <div class="actions-list-row2">
+                <div class="sell-container">
+                    <div class="products-header">
+                        <h3 class="sell-heading">Ventas Hoy</h3>
+                    </div>
+                    <canvas id="SalesTodayChart" class="dashboard-chart"></canvas>
+                    <p class="dashboard-info"><strong>Ventas hoy:</strong> {{ sales_today|floatformat:0|intcomma }}</p>
+                </div>
+
+                <div class="sell-container">
+                    <div class="products-header">
+                        <h3 class="sell-heading">Último Mes</h3>
+                    </div>
+                    <canvas id="SalesMonthChart" class="dashboard-chart"></canvas>
+                    <p class="dashboard-info"><strong>Ventas último mes:</strong> {{ sales_last_month_total|floatformat:0|intcomma }}</p>
+                </div>
+            </div>
+
+            <div class="sell-container">
+                <div class="products-header">
+                    <h3 class="sell-heading">Totales Este Año</h3>
+                </div>
+                <canvas id="SalesYearChart" class="dashboard-chart"></canvas>
+                <p class="dashboard-info"><strong>Ventas totales este año:</strong> {{ sales_total_year|floatformat:0|intcomma }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JSON DATA -->
+    {{ top_today|json_script:"IncomeTodayData" }}
+    {{ sales_last_month|json_script:"IncomeLastMonthData" }}
+    {{ revenue_year|json_script:"RevenueYearData" }}
+
+    <!-- JSON para VENTAS -->
+    {{ top_today|json_script:"SalesTodayData" }}
+    {{ sales_last_month|json_script:"SalesLastMonthData" }}
+    {{ revenue_year|json_script:"SalesYearData" }}
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // ====== INGRESOS ======
+        const incomeToday = JSON.parse(document.getElementById('IncomeTodayData').textContent);
+        const incomeLastMonth = JSON.parse(document.getElementById('IncomeLastMonthData').textContent);
+        const revenueYear = JSON.parse(document.getElementById('RevenueYearData').textContent);
+
+        // ====== VENTAS ======
+        const salesToday = JSON.parse(document.getElementById('SalesTodayData').textContent);
+        const salesLastMonth = JSON.parse(document.getElementById('SalesLastMonthData').textContent);
+        const salesYear = JSON.parse(document.getElementById('SalesYearData').textContent);
+
+        // Ingresos HOY
+        new Chart(document.getElementById('IncomeTodayChart'), {
+            type: 'bar',
+            data: {
+                labels: incomeToday.map(item => item.name),
+                datasets: [{
+                    label: 'Ingresos',
+                    data: incomeToday.map(item => item.total_revenue),
+                    borderColor: 'rgb(255, 99, 132)',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    tension: 0.3,
+                    pointRadius: 4,
+                    fill: false
+                }]
+            }
+        });
+
+        // Ingresos MES
+        new Chart(document.getElementById('IncomeMonthChart'), {
+            type: 'bar',
+            data: {
+                labels: incomeLastMonth.map(item => item.name),
+                datasets: [{
+                    label: 'Ingresos',
+                    data: incomeLastMonth.map(item => item.total_revenue),
+                    backgroundColor: 'rgba(255, 159, 64, 0.5)',
+                    borderColor: 'rgb(255, 159, 64)'
+                }]
+            }
+        });
+
+        // Ingresos AÑO
+        new Chart(document.getElementById('IncomeYearChart'), {
+            type: 'bar',
+            data: {
+                labels: revenueYear.map(item =>
+                    new Date(2025, item.month - 1).toLocaleString('es', { month: 'short' })
+                ),
+                datasets: [{
+                    label: 'Ingresos',
+                    data: revenueYear.map(item => item.total_revenue),
+                    borderColor: 'rgb(54, 162, 235)',
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)'
+                }]
+            }
+        });
+
+        // ====== GRÁFICOS DE VENTAS ======
+
+        // Ventas HOY
+        new Chart(document.getElementById('SalesTodayChart'), {
+            type: 'bar',
+            data: {
+                labels: salesToday.map(item => item.name),
+                datasets: [{
+                    label: 'Ventas',
+                    data: salesToday.map(item => item.total_sales),
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    tension: 0.3,
+                    pointRadius: 4,
+                    fill: false
+                }]
+            }
+        });
+
+        // Ventas MES
+        new Chart(document.getElementById('SalesMonthChart'), {
+            type: 'bar',
+            data: {
+                labels: salesLastMonth.map(item => item.name),
+                datasets: [{
+                    label: 'Ventas',
+                    data: salesLastMonth.map(item => item.total_sales),
+                    backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                    borderColor: 'rgb(153, 102, 255)'
+                }]
+            }
+        });
+
+        // Ventas AÑO
+        new Chart(document.getElementById('SalesYearChart'), {
+            type: 'bar',
+            data: {
+                labels: salesYear.map(item =>
+                    new Date(2025, item.month - 1).toLocaleString('es', { month: 'short' })
+                ),
+                datasets: [{
+                    label: 'Ventas',
+                    data: salesYear.map(item => item.total_sales),
+                    borderColor: 'rgb(255, 206, 86)',
+                    backgroundColor: 'rgba(255, 206, 86, 0.2)'
+                }]
+            }
+        });
+    </script>
+{% endblock %}

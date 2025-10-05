@@ -3,8 +3,8 @@ from functools import wraps
 
 def no_session_required(view_func):
     """
-    Decorador que obliga a que el usuario NO esté autenticado.
-    Si está autenticado, lo redirige a 'home:home'.
+    Decorator that forces the user to NOT be authenticated.
+    If authenticated, it redirects them to 'home:home'.
     """
     @wraps(view_func)
     def _wrapped_view(request, *args, **kwargs):

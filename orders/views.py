@@ -177,7 +177,7 @@ def order_delete_view(request, order_id):
 
 @login_required
 def order_qr_view(request, order_id):
-    order = get_object_or_404(Order, id=order_id, user=request.user)
+    order = get_object_or_404(Order, id=order_id, user=request.user, status="pending", donot_show=False)
     qr_code = order_qr(order.qr_code_data)
     return render(request, "pages/orders/order_qr.html", {
         "order": order,
@@ -269,24 +269,25 @@ def order_cancel_stock_view(request, order_id):
 @login_required
 def order_detail_view(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
-    can_refund = order.status == "completed"
-    can_delete = order.status == "pending"
-    if request.method == "POST":
-        if "refund" in request.POST and can_refund:
-            # Reembolsa el total y cambia estado
-            refund_amount = order.get_total_cost()
-            if refund_amount > 0 and hasattr(order.user, "credit"):
-                order.user.credit = F("credit") + refund_amount
-                order.user.save(update_fields=["credit"])
-            order.status = "refunded"
-            order.save(update_fields=["status"])
-            return redirect("orders:order_list")
-        elif "delete" in request.POST and can_delete:
-            order.delete()
-            return redirect("orders:order_list")
+    can_cancel = order.status == "pending"
+    can_delete = order.status == "completed"
+
     context = {
         "order": order,
-        "can_refund": can_refund,
+        "can_cancel": can_cancel,
         "can_delete": can_delete,
     }
     return render(request, "pages/orders/order_detail.html", context)
+
+@login_required
+@require_POST
+def order_remove_view(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+
+    if order.status != "completed":
+        return HttpResponseBadRequest("Solo se pueden eliminar pedidos completados.")
+
+    order.donot_show = True
+    order.save(update_fields=["donot_show"])
+
+    return redirect("orders:order_list")

@@ -17,6 +17,7 @@
             <a href="{% url 'shop:pending_orders' %}" class="{% if request.resolver_match.url_name == 'pending_orders' %}active{% endif %}">Ordenes pendientes</a>
             <a href="{% url 'shop:sell' %}" class="{% if request.resolver_match.url_name == 'sell' %}active{% endif %}">Vender producto</a>
             <a href="{% url 'shop:list_my_products' %}" class="{% if request.resolver_match.url_name == 'list_my_products' %}active{% endif %}">Editar productos</a>
+            <a href="{% url 'shop:seller_analytics_dashboard' %}" class="{% if request.resolver_match.url_name == 'seller_analytics_dashboard' %}active{% endif %}">Ingresos</a>
         </nav>
     </aside>
 

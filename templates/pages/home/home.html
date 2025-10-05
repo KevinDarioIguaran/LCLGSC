@@ -23,7 +23,7 @@
                 {% for offer in best_offers %}
                     <div class="category">
                         <a href="{{ offer.category.get_absolute_url }}">
-                            <img src="{{ offer.image.url }}" alt="Oferta en {{ offer.category.name }}" class="category-image">
+                            <img src="{{ offer.image.url }}" alt="Oferta en {{ offer.category.name }}" class="category-image" loading="lazy">
                         </a>
                     </div>
                 {% endfor %}

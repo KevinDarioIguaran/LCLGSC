@@ -7,6 +7,8 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
+from django.views.decorators.debug import sensitive_post_parameters
+from django.contrib import messages
 
 from users.models import CustomUser
 from users.decorators import no_session_required
@@ -18,30 +20,29 @@ def show_account_view(request):
     return render(request, "account/profile/show_account.html")
 
 @no_session_required
+@sensitive_post_parameters("password")
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('users:show_account')
-
-    errors = {}
     if request.method == "POST":
         user_input = request.POST.get("identifier")
         password = request.POST.get("password")
         user = None
 
-        if user_input:
+        if not user_input:
+            messages.error(request, "Debes ingresar tu código de usuario.")
+        else:
             try:
                 user = CustomUser.objects.get(code=user_input)
             except CustomUser.DoesNotExist:
-                errors["identifier"] = "Usuario no encontrado o contraseña incorrecta."
-        else:
-            errors["identifier"] = "Debes ingresar tu código de usuario."
+                messages.error(request, "Usuario no encontrado o contraseña incorrecta.")
 
-        if user and user.check_password(password):
-            login(request, user)
-            return redirect("users:show_account")
-        elif user:
-            errors["password"] = "Usuario no encontrado o contraseña incorrecta."
-    return render(request, "account/signin.html", {"errors": errors})
+        if user:
+            if user.check_password(password):
+                login(request, user)
+                return redirect("users:show_account")
+            else:
+                messages.error(request, "Usuario no encontrado o contraseña incorrecta.")
+
+    return render(request, "account/signin.html")
 
 @no_session_required
 def signup_view(request):
@@ -140,7 +141,11 @@ def change_password_view(request):
             user.set_password(new_password1)
             user.save()
             update_session_auth_hash(request, user)
-            return JsonResponse({'success': True, 'redirect_url': reverse('users:show_account')})
+
+            return JsonResponse({
+                'success': True,
+                'redirect_url': reverse('users:show_account')
+            })
         except ValidationError as e:
             errors["new_password"] = e.messages
 

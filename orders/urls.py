@@ -14,4 +14,5 @@ urlpatterns = [
     path('procesar-qr/', views.process_qr_view, name='process_qr'),
     path('no-quiero-ver/<int:order_id>/', views.order_donnot_show_view, name='order_donnot_show'),
     path('orden/<int:order_id>/detalle/', views.order_detail_view, name='order_detail'),
+    path('orden/remover/<int:order_id>/', views.order_remove_view, name='order_remove'),
 ]
